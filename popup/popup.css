@@ -1,0 +1,57 @@
+* { box-sizing: border-box; }
+body {
+  width: 260px;
+  margin: 0;
+  padding: 14px 16px 16px;
+  background: #1f1f1f;
+  color: #f1f1f1;
+  font: 14px/1.4 Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+.row.sub { font-weight: 400; font-size: 13px; color: #bbb; }
+body.off .row.sub { opacity: 0.4; pointer-events: none; }
+.switch { position: relative; width: 36px; height: 20px; flex: none; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch > span {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: #555;
+  transition: background 0.2s;
+}
+.switch > span::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+.switch input:checked + span { background: #ff0033; }
+.switch input:checked + span::before { transform: translateX(16px); }
+#open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border: 0;
+  border-radius: 6px;
+  background: #e00;
+  color: #fff;
+  font: 600 14px Roboto, "Helvetica Neue", Arial, sans-serif;
+  cursor: pointer;
+}
+#open:hover { background: #c00; }

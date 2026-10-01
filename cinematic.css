@@ -1,0 +1,299 @@
+/* Cinematic — Netflix-style YouTube Home (personal rebuild) */
+
+/* ---------- site-wide: darker palette ---------- */
+html.cyt-on[dark] {
+  --yt-spec-base-background: #0f0f0f;
+  --yt-spec-general-background-a: #0f0f0f;
+}
+
+/* ---------- Home stage on: freeze YouTube's page underneath ---------- */
+html.cyt-stage-on,
+html.cyt-stage-on body {
+  overflow: hidden !important;
+}
+html.cyt-stage-on #masthead-container,
+html.cyt-stage-on ytd-masthead,
+html.cyt-stage-on ytd-masthead #background,
+html.cyt-stage-on #frosted-glass {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+/* top bar: only the search box stays. visibility (not display) keeps search centred */
+html.cyt-stage-on ytd-masthead #start,
+html.cyt-stage-on ytd-masthead #end,
+html.cyt-stage-on ytd-masthead #voice-search-button,
+html.cyt-stage-on ytd-masthead #ai-companion-button {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* YouTube's category chips, wherever this YouTube version puts them */
+html.cyt-stage-on ytd-feed-filter-chip-bar-renderer,
+html.cyt-stage-on chip-bar-view-model,
+html.cyt-stage-on yt-chip-cloud-renderer,
+html.cyt-stage-on #chips-wrapper,
+html.cyt-stage-on ytd-rich-grid-renderer > #header,
+html.cyt-stage-on #frosted-glass {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html.cyt-stage-on ytd-mini-guide-renderer,
+html.cyt-stage-on tp-yt-app-drawer#guide[persistent] {
+  visibility: hidden !important;
+}
+/* YouTube's own hover previews would play under the stage */
+html.cyt-stage-on #video-preview,
+html.cyt-stage-on ytd-video-preview {
+  display: none !important;
+}
+
+#cyt-stage {
+  /* below the masthead (2020) and the guide drawer (2030) */
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  font-family: "YouTube Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+  user-select: none;
+}
+#cyt-stage button {
+  font-family: inherit;
+}
+
+/* ---------- hero media ---------- */
+.cyt-media {
+  position: absolute;
+  inset: 0;
+}
+.cyt-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* switching videos: the new thumbnail shows instantly, no fade */
+  opacity: 0.85;
+}
+.cyt-video {
+  position: absolute;
+  inset: 0;
+  container-type: size;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+/* video starts: quick fade in, then drop the thumbnail underneath */
+#cyt-stage.cyt-playing .cyt-video { opacity: 1; transition: opacity 0.25s ease; }
+#cyt-stage.cyt-playing .cyt-bg { opacity: 0; transition: opacity 0.2s ease 0.25s; }
+#cyt-player-host {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* "object-fit: cover" for a 16:9 player */
+  width: max(100cqw, 177.78cqh);
+  height: max(100cqh, 56.25cqw);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+#cyt-player-host .html5-video-player {
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+}
+/* video only: no title bar, controls, spinner, end screens or watermark */
+#cyt-player-host .html5-video-player > :not(.html5-video-container) {
+  display: none !important;
+}
+#cyt-player-host .html5-video-container,
+#cyt-player-host video {
+  width: 100% !important;
+  height: 100% !important;
+  left: 0 !important;
+  top: 0 !important;
+  object-fit: cover;
+}
+.cyt-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    /* just enough darkening behind the title (left) and the row (bottom) */
+    linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 30%, transparent 55%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 16%, transparent 38%);
+}
+
+/* ---------- foreground: info and row stacked from the bottom ---------- */
+.cyt-front {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* no top bar or hover card any more: the row sits near the bottom edge */
+  padding: 72px 0 clamp(18px, 3vh, 32px);
+  pointer-events: none;
+}
+.cyt-front > * {
+  pointer-events: auto;
+}
+.cyt-info {
+  width: min(46%, 760px);
+  margin: 0 6% clamp(18px, 4vh, 44px);
+}
+.cyt-channel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #e6e6e6;
+}
+.cyt-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.cyt-title {
+  margin: 0 0 24px;
+  font-size: clamp(28px, 3vw, 54px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cyt-actions {
+  display: flex;
+  gap: 10px;
+}
+.cyt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 22px 0 16px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.15s;
+}
+.cyt-btn:active { transform: scale(0.97); }
+.cyt-play { background: #fff; color: #000; }
+.cyt-play:hover { background: rgba(255, 255, 255, 0.8); }
+.cyt-mute { background: rgba(109, 109, 110, 0.7); color: #fff; }
+.cyt-mute:hover { background: rgba(109, 109, 110, 0.45); }
+
+.cyt-arrow {
+  position: absolute;
+  top: 42%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+.cyt-arrow:hover { opacity: 1; background: rgba(255, 255, 255, 0.2); }
+.cyt-prev { left: 1.5%; }
+.cyt-next { right: 1.5%; }
+
+/* ---------- row ---------- */
+.cyt-row-wrap {
+  position: relative;
+}
+.cyt-row {
+  display: flex;
+  gap: 12px;
+  padding: 6px 6%;
+  overflow-x: auto;
+  scroll-padding: 0 6%;
+  scrollbar-width: none;
+}
+.cyt-row::-webkit-scrollbar { display: none; }
+.cyt-card {
+  position: relative;
+  flex: none;
+  width: clamp(190px, 16vw, 300px);
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a1a1a;
+  outline: 2px solid transparent;
+  outline-offset: 0;
+  transition: transform 0.25s ease, outline-color 0.2s;
+}
+.cyt-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cyt-card:hover { transform: scale(1.04); }
+.cyt-card.cyt-sel { outline-color: #ff0033; }
+.cyt-badge {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+.cyt-badge.cyt-live { background: #cc0000; }
+.cyt-row-arrow {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  z-index: 3;
+  width: 5%;
+  padding: 0;
+  border: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cyt-row-wrap:hover .cyt-row-arrow { opacity: 1; }
+.cyt-row-arrow.cyt-hidden { display: none; }
+.cyt-left { left: 0; background: linear-gradient(90deg, rgba(0, 0, 0, 0.85), transparent); }
+.cyt-right { right: 0; background: linear-gradient(270deg, rgba(0, 0, 0, 0.85), transparent); }
+
+/* ---------- distraction-free (site-wide) ---------- */
+html.cyt-no-shorts ytd-rich-shelf-renderer[is-shorts],
+html.cyt-no-shorts ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html.cyt-no-shorts ytd-reel-shelf-renderer,
+html.cyt-no-shorts grid-shelf-view-model,
+html.cyt-no-shorts ytm-shorts-lockup-view-model,
+html.cyt-no-shorts ytm-shorts-lockup-view-model-v2,
+html.cyt-no-shorts ytd-rich-item-renderer:has(a[href^="/shorts/"]),
+html.cyt-no-shorts ytd-video-renderer:has(a[href^="/shorts/"]),
+html.cyt-no-shorts ytd-guide-entry-renderer:has(a[title="Shorts"]),
+html.cyt-no-shorts ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+html.cyt-on #masthead-ad,
+html.cyt-on ytd-banner-promo-renderer,
+html.cyt-on ytd-statement-banner-renderer,
+html.cyt-on ytd-ad-slot-renderer,
+html.cyt-on ytd-rich-item-renderer:has(ytd-ad-slot-renderer) {
+  display: none !important;
+}
