@@ -19,13 +19,30 @@ html.cyt-stage-on #frosted-glass {
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
-/* top bar: only the search box stays. visibility (not display) keeps search centred */
-html.cyt-stage-on ytd-masthead #start,
-html.cyt-stage-on ytd-masthead #end,
+/* top bar: the search box always shows; logo + Create/bell/profile fade in when the
+   mouse nears the top edge (content.js toggles .cyt-topbar). The menu button, mic and
+   AI button stay hidden. visibility (not display) keeps the search box centred. */
+html.cyt-stage-on ytd-masthead #guide-button,
+html.cyt-stage-on ytd-masthead #back-button,
 html.cyt-stage-on ytd-masthead #voice-search-button,
 html.cyt-stage-on ytd-masthead #ai-companion-button {
   visibility: hidden !important;
   pointer-events: none !important;
+}
+html.cyt-stage-on ytd-masthead #start,
+html.cyt-stage-on ytd-masthead #end {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+}
+html.cyt-stage-on.cyt-topbar ytd-masthead #start,
+html.cyt-stage-on.cyt-topbar ytd-masthead #end {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease;
+}
+html.cyt-stage-on.cyt-topbar #masthead-container {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.75), transparent) !important;
 }
 /* YouTube's category chips, wherever this YouTube version puts them */
 html.cyt-stage-on ytd-feed-filter-chip-bar-renderer,
@@ -151,6 +168,18 @@ html.cyt-stage-on ytd-video-preview {
   font-weight: 500;
   color: #e6e6e6;
 }
+.cyt-chan {
+  font-weight: 600;
+  color: #fff;
+}
+.cyt-meta {
+  color: #c8c8c8;
+}
+.cyt-chan:not(:empty) + .cyt-meta:not(:empty)::before {
+  content: "•";
+  margin-right: 10px;
+  color: #8a8a8a;
+}
 .cyt-avatar {
   width: 30px;
   height: 30px;
@@ -214,7 +243,48 @@ html.cyt-stage-on ytd-video-preview {
 .cyt-prev { left: 1.5%; }
 .cyt-next { right: 1.5%; }
 
-/* ---------- row ---------- */
+/* ---------- rows: the panel is one row tall; scroll / ↑↓ snap between rows ---------- */
+.cyt-rows {
+  position: relative; /* so each row's offsetTop is measured from here (goRow) */
+  --cyt-card-w: clamp(190px, 16vw, 300px);
+  /* whole pixels: a fractional row height leaves the last row unable to snap into place */
+  height: round(down, calc(var(--cyt-card-w) * 0.5625 + 50px), 1px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.cyt-rows::-webkit-scrollbar { display: none; }
+.cyt-block {
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.cyt-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 6%;
+}
+.cyt-row-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #e5e5e5;
+}
+.cyt-row-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #9a9a9a;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cyt-row-hint:hover { color: #fff; }
 .cyt-row-wrap {
   position: relative;
 }
@@ -230,7 +300,7 @@ html.cyt-stage-on ytd-video-preview {
 .cyt-card {
   position: relative;
   flex: none;
-  width: clamp(190px, 16vw, 300px);
+  width: var(--cyt-card-w);
   aspect-ratio: 16 / 9;
   border-radius: 8px;
   overflow: hidden;
@@ -259,6 +329,22 @@ html.cyt-stage-on ytd-video-preview {
   font-weight: 600;
 }
 .cyt-badge.cyt-live { background: #cc0000; }
+/* Continue Watching: how far you got */
+.cyt-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.cyt-progress > div {
+  height: 100%;
+  background: #ff0033;
+}
+.cyt-badge:has(~ .cyt-progress) {
+  bottom: 10px;
+}
 .cyt-row-arrow {
   position: absolute;
   top: 6px;
