@@ -2,8 +2,9 @@
 //
 // In theater mode the video gets most of the window: the player grows to
 // theaterSize% of the window height (popup slider, default 85) and the page starts
-// at the very top, so the title row peeks out below and the rest is a scroll away. The top bar hides until the mouse nears
-// the top edge (content.js handles the reveal for .cyt-immersive, same as Home),
+// at the very top, so the title row peeks out below and the rest is a scroll away.
+// The top bar hides until the mouse nears the top edge (content.js handles the
+// reveal for .cyt-immersive, same as Home),
 // and the channel + title appear over the video together with YouTube's own
 // controls (they follow the player's ytp-autohide class).
 (() => {
