@@ -439,12 +439,13 @@ html.cyt-amb-on ytd-watch-flexy #secondary {
 }
 
 /* ---------- immersive theater mode (watch.js sets .cyt-immersive) ---------- */
-/* the video fills the window; title, buttons and recommendations sit below it */
+/* the video gets most of the window (popup slider, default 85%); the title row
+   peeks out below and the rest is a scroll away */
 html.cyt-immersive ytd-page-manager {
   margin-top: 0 !important;
 }
 html.cyt-immersive ytd-watch-flexy[theater]:not([fullscreen]) #full-bleed-container {
-  height: 100vh !important;
+  height: var(--cyt-theater-h, 85vh) !important;
   max-height: none !important;
   min-height: 0 !important;
 }
@@ -471,8 +472,8 @@ html.cyt-immersive #frosted-glass {
 #cyt-watch-info {
   display: none;
   position: absolute;
-  left: 32px;
-  bottom: 78px;
+  left: 40px;
+  bottom: 16%; /* well clear of the progress bar and controls */
   z-index: 40;
   max-width: min(60%, 900px);
   color: #fff;

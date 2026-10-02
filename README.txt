@@ -29,10 +29,11 @@ Home page
 - Keyboard: ← → video, ↑ ↓ row, Enter play, M sound.
 
 Video page: full-screen theater mode
-- In theater mode the video fills the whole window. Title, buttons and
-  recommendations sit below it: scroll down to reach them.
+- In theater mode the video gets most of the window (85% of its height by
+  default; popup slider "Theater video size", 70-100%). The title row peeks out
+  below; scroll down for buttons and recommendations.
 - The top bar is hidden; move the mouse to the top edge to bring it back.
-- Channel (with avatar) and title appear over the video, bottom-left, whenever
+- Channel (with avatar) and title appear over the video, lower-left, whenever
   YouTube's own controls show (mouse move, or paused).
 - Popup: "Full-screen theater mode" on/off.
 

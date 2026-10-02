@@ -1,15 +1,15 @@
 // Cinematic — immersive theater mode on the watch page.
 //
-// In theater mode the video takes the whole window: the player grows to 100vh and
-// the page starts at the very top, so the title, buttons and recommendations sit
-// below the fold (scroll to reach them). The top bar hides until the mouse nears
+// In theater mode the video gets most of the window: the player grows to
+// theaterSize% of the window height (popup slider, default 85) and the page starts
+// at the very top, so the title row peeks out below and the rest is a scroll away. The top bar hides until the mouse nears
 // the top edge (content.js handles the reveal for .cyt-immersive, same as Home),
 // and the channel + title appear over the video together with YouTube's own
 // controls (they follow the player's ytp-autohide class).
 (() => {
   'use strict';
 
-  const DEFAULTS = { enabled: true, immersiveTheater: true };
+  const DEFAULTS = { enabled: true, immersiveTheater: true, theaterSize: 85 };
   let S = { ...DEFAULTS };
   const root = document.documentElement;
 
@@ -65,6 +65,13 @@
     if (data.avatar) info.avatar.src = data.avatar;
   }
 
+  // The player only re-fits the picture to its new box on a window resize.
+  const refit = () => requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+
+  function applySize() {
+    root.style.setProperty('--cyt-theater-h', `${S.theaterSize}vh`);
+  }
+
   function sync() {
     const f = flexy();
     if (f && f !== watchedFlexy) {
@@ -75,19 +82,23 @@
     const on = immersiveWanted();
     if (on !== root.classList.contains('cyt-immersive')) {
       root.classList.toggle('cyt-immersive', on);
-      // The player only re-fits the picture to its new box on a window resize.
-      requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+      refit();
     }
     if (on) ensureInfo();
   }
 
   chrome.storage.sync.get(DEFAULTS, (v) => {
     S = { ...DEFAULTS, ...v };
+    applySize();
     sync();
   });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
     for (const [k, { newValue }] of Object.entries(changes)) S[k] = newValue ?? DEFAULTS[k];
+    if (changes.theaterSize) {
+      applySize();
+      if (root.classList.contains('cyt-immersive')) refit();
+    }
     sync();
   });
 
