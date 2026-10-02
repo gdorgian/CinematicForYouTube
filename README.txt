@@ -12,8 +12,8 @@ Backup: private GitHub repo gdorgian/CinematicForYouTube
 Home page
 - Full-screen hero autoplays the selected video (channel • views • upload date,
   big title, Play, Mute/Unmute). ‹ › on the sides step through the current row.
-- Rows (scroll the row area up/down, ↑ ↓ keys, or click the hint at the right of
-  a row title):
+- Rows (scroll up/down anywhere: one row per gesture; ↑ ↓ keys; or click the
+  hint at the right of a row title). Swipe sideways to scroll a row:
     Recommended for You   YouTube's Home feed, loads more as you reach the end
     Continue Watching     half-watched videos from your history, with a progress
                           bar; the preview starts where you stopped
@@ -22,19 +22,22 @@ Home page
   Rows that come back empty are left out.
 - Hover a card to make it the hero. Play (or Enter, or clicking a card) opens the
   video at the second the preview had reached.
-- Top bar: only search shows. Move the mouse to the top edge to bring back the
-  logo, Create, notifications and your profile.
+- Top bar: hidden. Move the mouse to the top edge to bring back the logo,
+  search, Create, notifications and your profile.
 - Keyboard: ← → video, ↑ ↓ row, Enter play, M sound.
 
 Battery and data
-- Previews are capped at 720p.
-- The preview pauses after 3 minutes without mouse/keyboard activity, when Brave
+- Previews play at 1080p.
+- The preview pauses after 2 minutes without mouse/keyboard activity, when Brave
   isn't the focused window, or when the tab is hidden. It resumes on activity.
 
 Watch history
-- Previews shouldn't land in your history: the player's history pings are dropped
-  while the Home screen is up and for every preview playback. Opening a video
-  with Play logs it as normal.
+- Previews don't land in your history: on Home, every player except the real
+  watch player (incl. the miniplayer) has its history pings dropped, and preview
+  pings are dropped everywhere. Opening a video with Play logs it as normal.
+- Diagnostics (off by default): in the YouTube tab's console run
+  localStorage.setItem('cyt:debug','1'), reload; history-related requests are
+  recorded in localStorage['cyt:log'].
 
 How it works
 - player.js runs in the page and drives YouTube's own "inline preview" player

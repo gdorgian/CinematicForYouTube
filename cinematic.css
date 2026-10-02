@@ -60,6 +60,10 @@ html.cyt-stage-on ytd-mini-guide-renderer,
 html.cyt-stage-on tp-yt-app-drawer#guide[persistent] {
   visibility: hidden !important;
 }
+/* Home is loading: keep YouTube's grid out of sight until the stage takes over */
+html.cyt-on.cyt-pending ytd-browse[page-subtype="home"] {
+  visibility: hidden !important;
+}
 /* YouTube's own hover previews would play under the stage */
 html.cyt-stage-on #video-preview,
 html.cyt-stage-on ytd-video-preview {

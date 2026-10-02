@@ -89,6 +89,17 @@
 
   const metaLine = (item) => [item.views, item.date].filter(Boolean).join(' • ');
 
+  // ---------- Home: hide YouTube's grid until the stage is ready ----------
+  // Avoids a flash of the normal layout (and YouTube's own hover previews) while the
+  // feed loads. Falls back to the normal page if no stage appears (e.g. signed out).
+  let pendingTimer = 0;
+  function setPending(on) {
+    clearTimeout(pendingTimer);
+    root.classList.toggle('cyt-pending', on);
+    if (on) pendingTimer = setTimeout(() => root.classList.remove('cyt-pending'), 5000);
+  }
+  if (isHome()) setPending(true);
+
   // ---------- settings ----------
   let weAddedDark = false;
   function enforceDark() {
@@ -700,6 +711,7 @@
     const browse = homeBrowse();
     if (!(S.enabled && isHome() && browse && !browse.hasAttribute('hidden'))) {
       teardown();
+      if (!isHome() || !S.enabled) setPending(false);
       return;
     }
     const items = readFeed();
@@ -707,6 +719,7 @@
     if (!st) {
       st = buildStage();
       root.classList.add('cyt-stage-on');
+      setPending(false);
       window.scrollTo(0, 0);
       send('stage', { on: true });
       st.home = addRow('home', 'Recommended for You');
@@ -729,7 +742,10 @@
   }
 
   document.addEventListener('yt-navigate-start', teardown);
-  document.addEventListener('yt-navigate-finish', schedule);
+  document.addEventListener('yt-navigate-finish', () => {
+    if (isHome() && !st) setPending(true);
+    schedule();
+  });
   window.addEventListener('popstate', schedule);
 
   const mo = new MutationObserver(() => {

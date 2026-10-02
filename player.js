@@ -16,9 +16,10 @@
   // ---------- keep previews out of watch history ----------
   // A view lands in your history through the player's stats pings
   // (/api/stats/playback, /watchtime, /ptracking). Each ping carries the playback's
-  // "cpn" id, so we drop pings that belong to a preview playback. While the Home
-  // stage is up we drop all of them: no other player runs there, and the first ping
-  // can fire before we've had a chance to read the new preview's cpn.
+  // "cpn" id. Rules:
+  //   - the real watch player (#movie_player, incl. the miniplayer) always logs
+  //   - on Home (stage up or still loading) every other player is a preview: drop
+  //   - anywhere else, drop pings whose cpn belongs to one of our previews
   const STATS_RE = /\/api\/stats\/(?:playback|watchtime|delayplay|atr)\b|\/ptracking\b/;
   const previewCpns = new Set();
   let stageOn = false;
@@ -51,7 +52,9 @@
       const s = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
       if (!STATS_RE.test(s)) return false;
       const cpn = new URL(s, location.href).searchParams.get('cpn');
-      const block = stageOn || (!!cpn && previewCpns.has(cpn));
+      const mainCpn = document.getElementById('movie_player')?.getVideoData?.()?.cpn;
+      const block = !(cpn && cpn === mainCpn)
+        && (stageOn || location.pathname === '/' || (!!cpn && previewCpns.has(cpn)));
       dlog({ [block ? 'BLOCKED' : 'allowed']: s.slice(0, 160), via, stageOn, cpn });
       return block;
     } catch {
