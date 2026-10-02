@@ -2,7 +2,8 @@
 const DEFAULTS = {
   enabled: true, netflixHome: true, sound: false, hideShorts: true,
   immersiveTheater: true, theaterSize: 85,
-  ambient: true, ambientTheaterOnly: false, ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
+  ambient: true, ambientTheaterOnly: false, ambientBars: true,
+  ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
 };
 const inputs = [...document.querySelectorAll('[data-key]')];
 

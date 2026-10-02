@@ -16,7 +16,7 @@
 
   // Defaults: a strong, room-filling glow (spread 122, blur 38, edge 15.3).
   const DEFAULTS = {
-    enabled: true, ambient: true, ambientTheaterOnly: false,
+    enabled: true, ambient: true, ambientTheaterOnly: false, ambientBars: true,
     ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
   };
   let S = { ...DEFAULTS };
@@ -38,6 +38,67 @@
   const wanted = () => S.enabled && S.ambient && location.pathname === '/watch'
     && (!S.ambientTheaterOnly || inTheater());
   const mainVideo = () => document.querySelector('#movie_player video.html5-main-video, #movie_player video');
+
+  // ---------- black bars ----------
+  // Widescreen films often have black bars baked into the video. The glow takes its
+  // colours from the picture's edges, so above/below such a film it would just be
+  // black. Twice a second, look for bars in the small source frame and crop them
+  // off what the layers are drawn from. Bars are taken as symmetric (the smaller
+  // of top/bottom, left/right), so a dark sky or floor isn't mistaken for one; an
+  // all-dark frame (fade to black) keeps the last crop; during playback a new crop
+  // must be seen twice in a row before it's used (right away after a load/seek).
+  const BAR_LEVEL = 24 * 3; // r+g+b at or below this counts as black
+  const DETECT_EVERY = 15; // renders (~0.5 s at 30 fps)
+
+  function detectBars(w, h) {
+    let data;
+    try { data = amb.sctx.getImageData(0, 0, w, h).data; } catch { return null; }
+    const lit = (x, y) => {
+      const i = (y * w + x) * 4;
+      return data[i] + data[i + 1] + data[i + 2] > BAR_LEVEL;
+    };
+    const rowDark = (y) => {
+      let n = 0;
+      for (let x = 0; x < w; x++) if (lit(x, y) && ++n > w * 0.02) return false;
+      return true;
+    };
+    const colDark = (x, y0, y1) => {
+      let n = 0;
+      for (let y = y0; y < y1; y++) if (lit(x, y) && ++n > (y1 - y0) * 0.02) return false;
+      return true;
+    };
+    let top = 0;
+    while (top < h / 2 && rowDark(top)) top++;
+    if (top >= h / 2 - 1) return null; // all dark: no information
+    let bottom = 0;
+    while (bottom < h / 2 && rowDark(h - 1 - bottom)) bottom++;
+    const y = Math.min(top, bottom);
+    let left = 0;
+    while (left < w / 2 && colDark(left, y, h - y)) left++;
+    let right = 0;
+    while (right < w / 2 && colDark(w - 1 - right, y, h - y)) right++;
+    const x = Math.min(left, right);
+    // one extra pixel past the edge skips the bar's soft, half-dark border
+    return { x: x ? x + 1 : 0, y: y ? y + 1 : 0 };
+  }
+
+  function updateBars(w, h, full) {
+    if (!S.ambientBars) {
+      amb.crop = null;
+      return;
+    }
+    if (!full && ++amb.detectTick % DETECT_EVERY !== 1) return;
+    const found = detectBars(w, h);
+    if (!found) return;
+    const key = `${found.x},${found.y}`;
+    if (key === amb.cropKey) return;
+    if (!full && key !== amb.cropCandidate) {
+      amb.cropCandidate = key;
+      return;
+    }
+    amb.cropKey = key;
+    amb.crop = found.x || found.y ? found : null;
+  }
 
   // ---------- drawing ----------
   function fadeGradient(ctx, total, edge, horizontal, w, h) {
@@ -65,9 +126,16 @@
     const sh = Math.max(1, Math.round((SRC_W * v.videoHeight) / v.videoWidth));
     if (src.height !== sh) src.height = sh;
     try { sctx.drawImage(v, 0, 0, SRC_W, sh); } catch { return; }
+    if (full) amb.detectTick = 0;
+    updateBars(SRC_W, sh, full); // new video / seek: look for bars right away
+    const c = amb.crop;
+    const sx = c ? c.x : 0;
+    const sy = c ? c.y : 0;
+    const sw = SRC_W - 2 * sx;
+    const sch = sh - 2 * sy;
     octx.fillStyle = '#000';
     octx.fillRect(0, 0, off.width, off.height);
-    for (const l of layers) octx.drawImage(src, l.x, l.y, l.w, l.h); // outermost first
+    for (const l of layers) octx.drawImage(src, sx, sy, sw, sch, l.x, l.y, l.w, l.h); // outermost first
     octx.drawImage(fade, 0, 0);
     ctx.globalAlpha = full ? 1 : BLEND;
     ctx.drawImage(off, 0, 0);
@@ -155,6 +223,9 @@
     }
     amb.video = video;
     amb.key = '';
+    amb.crop = null;
+    amb.cropKey = '0,0';
+    amb.cropCandidate = '';
     for (const t of FRAME_EVENTS) video.addEventListener(t, amb.onFrameEvent);
     amb.ro.observe(video);
     place();
@@ -180,6 +251,10 @@
       octx: off.getContext('2d', { alpha: false }),
       fade: document.createElement('canvas'),
       layers: [],
+      crop: null, // black bars cut off the source frame: {x, y} in source pixels
+      cropKey: '0,0',
+      cropCandidate: '',
+      detectTick: 0,
       key: '',
       video: null,
       last: 0,

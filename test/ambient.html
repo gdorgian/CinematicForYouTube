@@ -3,6 +3,8 @@
      generated test pattern. Left 15% red, right 15% blue, middle green with a moving
      white square. A correct glow is red on the left, blue on the right and has no
      green in the margins (the light comes from the picture's edges).
+     ?bars=1 adds letterbox bars (like a widescreen film): with "Remove black bars"
+     on, the glow above and below must still be green, not black.
      Serve the repo root (see .claude/launch.json) and open /test/ambient.html. -->
 <html dark>
 <head>
@@ -30,17 +32,21 @@
     </ytd-watch-flexy>
   </ytd-app>
   <script>
-    history.replaceState({}, '', '/watch'); // ambient.js only runs on /watch
-    window.chrome = { storage: { sync: { get: (d, cb) => cb(d), set() {} }, onChanged: { addListener() {} } } };
+    history.replaceState({}, '', '/watch' + location.search); // ambient.js only runs on /watch
+    // ?barsoff = the popup's "Remove black bars" switched off
+    const barsOff = new URLSearchParams(location.search).has('barsoff');
+    window.chrome = { storage: { sync: { get: (d, cb) => cb({ ...d, ...(barsOff ? { ambientBars: false } : {}) }), set() {} }, onChanged: { addListener() {} } } };
     const c = document.createElement('canvas');
     c.width = 640; c.height = 360;
     const g = c.getContext('2d');
     let x = 120;
+    const bars = new URLSearchParams(location.search).has('bars');
     (function paint() {
       g.fillStyle = '#1db954'; g.fillRect(0, 0, 640, 360);
       g.fillStyle = '#ff2020'; g.fillRect(0, 0, 96, 360);
       g.fillStyle = '#2060ff'; g.fillRect(544, 0, 96, 360);
       g.fillStyle = '#fff'; g.fillRect(x, 150, 60, 60);
+      if (bars) { g.fillStyle = '#000'; g.fillRect(0, 0, 640, 52); g.fillRect(0, 308, 640, 52); }
       x = x > 460 ? 120 : x + 2;
       requestAnimationFrame(paint);
     })();

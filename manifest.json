@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Cinematic — Netflix-style YouTube",
   "short_name": "Cinematic",
-  "version": "3.9.0",
+  "version": "3.10.0",
   "description": "Netflix-style YouTube: cinematic Home screen, theater layout and ambient light.",
   "icons": {
     "16": "icons/icon16.png",

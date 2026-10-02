@@ -24,6 +24,7 @@ A browser extension (Chrome, Brave, Edge, any Chromium browser) that turns YouTu
 
 **Ambient light**
 - The video's colours glow around the player like an Ambilight TV; the light on each side comes from that side of the picture
+- Black-bar removal: widescreen films with black bars baked in still glow above and below (the light comes from the real picture edge, not the bars)
 - Adjustable spread, blur and strength; optionally only in theater mode
 - Light on the battery: tiny canvas, at most 30 fps, GPU blur
 
@@ -60,7 +61,7 @@ Click the extension icon:
 - **Enable Cinematic** — everything on/off
 - **Netflix mode** — the Home screen (+ previews with sound)
 - **Theater mode** — the new video layout (+ video size)
-- **Ambient light** — glow around videos (+ only in theater mode, spread, blur, strength)
+- **Ambient light** — glow around videos (+ only in theater mode, remove black bars, spread, blur, strength)
 - **Hide Shorts everywhere**
 
 Netflix mode and Theater mode are independent: use either one or both.
