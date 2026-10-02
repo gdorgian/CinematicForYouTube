@@ -198,6 +198,9 @@
     };
   }
 
+  // watch.js (same content-script world) builds its "Up next" row with this too
+  globalThis.cytShared = { readItem };
+
   function readFeed() {
     const browse = homeBrowse();
     if (!browse) return [];

@@ -1,4 +1,4 @@
-Cinematic — Netflix-style YouTube (personal rebuild) — v3.5
+Cinematic — Netflix-style YouTube (personal rebuild) — v3.6
 ===========================================================
 
 Install / update in Brave
@@ -28,14 +28,17 @@ Home page
   search, Create, notifications and your profile.
 - Keyboard: ← → video, ↑ ↓ row, Enter play, M sound.
 
-Video page: full-screen theater mode
-- In theater mode the video gets most of the window (85% of its height by
-  default; popup slider "Theater video size", 70-100%). The title row peeks out
-  below; scroll down for buttons and recommendations.
+Video page: cinematic theater mode
+- In theater mode the video gets most of the window (88% of its height by
+  default; popup slider "Theater video size", 70-100%).
 - The top bar is hidden; move the mouse to the top edge to bring it back.
-- Channel (with avatar) and title appear over the video, lower-left, whenever
-  YouTube's own controls show (mouse move, or paused), but only while YouTube's
-  own title row is off screen (e.g. at a 95-100% size), so it's never shown twice.
+- The title appears over the video whenever YouTube's controls show (mouse move,
+  or paused); YouTube's own title line is hidden.
+- One bar under the video: channel + Subscribe, like/share/save/... and the
+  related chips (All / From <channel> / Watched) on the right.
+- The recommendations sidebar becomes an "Up next" row of cards like Home's
+  (hover a card for its title, channel, views and date); description and
+  comments below take the full width. With live chat open the sidebar stays.
 - Popup: "Full-screen theater mode" on/off.
 
 Video page: ambient light

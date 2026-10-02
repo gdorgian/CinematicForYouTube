@@ -449,13 +449,13 @@ html.cyt-amb-on ytd-watch-flexy #secondary {
 }
 
 /* ---------- immersive theater mode (watch.js sets .cyt-immersive) ---------- */
-/* the video gets most of the window (popup slider, default 85%); the title row
-   peeks out below and the rest is a scroll away */
+/* the video gets most of the window (popup slider, default 88%); the bar with
+   channel, buttons and chips sits right below it */
 html.cyt-immersive ytd-page-manager {
   margin-top: 0 !important;
 }
 html.cyt-immersive ytd-watch-flexy[theater]:not([fullscreen]) #full-bleed-container {
-  height: var(--cyt-theater-h, 85vh) !important;
+  height: var(--cyt-theater-h, 88vh) !important;
   max-height: none !important;
   min-height: 0 !important;
 }
@@ -478,51 +478,133 @@ html.cyt-immersive #frosted-glass {
   visibility: hidden !important;
 }
 
-/* channel + title over the video: shown together with YouTube's own controls, and
-   only while YouTube's own title row is off screen (watch.js: .cyt-title-onscreen) */
+/* title over the video, shown together with YouTube's own controls */
 #cyt-watch-info {
-  display: none;
   position: absolute;
   left: 40px;
   bottom: 16%; /* well clear of the progress bar and controls */
   z-index: 40;
   max-width: min(60%, 900px);
   color: #fff;
-  font-family: "YouTube Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 700 clamp(22px, 2vw, 36px) / 1.12 "YouTube Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.01em;
   text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   opacity: 0;
   transform: translateY(6px);
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
-html.cyt-immersive #cyt-watch-info {
-  display: block;
+html:not(.cyt-immersive) #cyt-watch-info {
+  display: none !important;
 }
-html.cyt-immersive:not(.cyt-title-onscreen) #movie_player:not(.ytp-autohide) #cyt-watch-info {
+html.cyt-immersive #movie_player:not(.ytp-autohide) #cyt-watch-info {
   opacity: 1;
   transform: none;
 }
-.cyt-wi-channel {
-  display: flex;
+
+/* the title line goes (it's on the video); one bar: channel + buttons + chips */
+html.cyt-immersive ytd-watch-metadata #title-row {
+  display: none !important;
+}
+html.cyt-immersive ytd-watch-metadata #top-row {
+  display: flex !important;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-size: 15px;
-  font-weight: 600;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin-top: 12px;
 }
-.cyt-wi-channel img {
-  width: 30px;
+html.cyt-immersive ytd-watch-metadata #top-row #actions {
+  margin-left: auto;
+}
+#cyt-bar-chips,
+#cyt-related {
+  display: none;
+}
+html.cyt-immersive #cyt-bar-chips {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  margin-left: 8px;
+}
+#cyt-bar-chips .cyt-chip {
+  flex: none;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f1f1;
+  font: 500 14px Roboto, Arial, sans-serif;
+  cursor: pointer;
+}
+#cyt-bar-chips .cyt-chip:hover { background: rgba(255, 255, 255, 0.2); }
+#cyt-bar-chips .cyt-chip.cyt-on { background: #f1f1f1; color: #0f0f0f; }
+
+/* no sidebar: recommendations become the "Up next" row, the rest goes full width
+   (except with live chat open: the chat lives in the sidebar) */
+html.cyt-immersive ytd-watch-flexy:not([live-chat-present-and-expanded]) #secondary {
+  display: none !important;
+}
+html.cyt-immersive ytd-watch-flexy:not([live-chat-present-and-expanded]) #primary {
+  max-width: none !important;
+}
+html.cyt-immersive ytd-watch-flexy[live-chat-present-and-expanded] #cyt-related {
+  display: none !important;
+}
+html.cyt-immersive #cyt-related {
+  display: block;
+  --cyt-card-w: clamp(180px, 14vw, 280px);
+  margin: 18px 0 6px;
+}
+#cyt-related .cyt-row-head {
   height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
+  padding: 0;
 }
-.cyt-wi-title {
-  font-size: clamp(22px, 2vw, 36px);
-  font-weight: 700;
-  line-height: 1.12;
-  letter-spacing: -0.01em;
+#cyt-related .cyt-row-head h2 {
+  margin: 0;
+  font: 600 18px "YouTube Sans", Roboto, Arial, sans-serif;
+  color: #f1f1f1;
+}
+#cyt-related .cyt-row {
+  padding: 6px 2px;
+  scroll-padding: 0;
+}
+#cyt-related .cyt-row-arrow {
+  font-size: 34px;
+  line-height: 1;
+}
+/* hover caption on the picture-only cards */
+.cyt-card-cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 26px 10px 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.88));
+  color: #fff;
+  font: 13px/1.3 Roboto, Arial, sans-serif;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.cyt-card-cap b {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-weight: 600;
 }
+.cyt-card-cap small {
+  display: block;
+  margin-top: 3px;
+  color: #c8c8c8;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cyt-card:hover .cyt-card-cap { opacity: 1; }
+.cyt-card:hover .cyt-badge { opacity: 0; }

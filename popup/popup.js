@@ -1,7 +1,7 @@
 // Keep in sync with DEFAULTS in content.js, ambient.js and watch.js
 const DEFAULTS = {
   enabled: true, sound: false, hideShorts: true,
-  immersiveTheater: true, theaterSize: 85,
+  immersiveTheater: true, theaterSize: 88,
   ambient: true, ambientTheaterOnly: false, ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
 };
 const inputs = [...document.querySelectorAll('[data-key]')];
