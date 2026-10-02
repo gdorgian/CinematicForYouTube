@@ -39,9 +39,8 @@ Video page: cinematic theater mode
   Subscribe on the left, views and date in the middle, like/share/save/... on
   the right, all scaled up to fit, and a "More videos" hint at the bottom.
   Nothing else shows until you scroll.
-- Below the fold: the recommendations as a row of cards like Home's, with their
-  chips (All / From <channel> / Watched) above; description and comments take
-  the full width. With live chat open the sidebar stays.
+- Below the fold: the recommendations as a row of cards like Home's; description
+  and comments take the full width. With live chat open the sidebar stays.
 - Popup: "Theater mode" switch and "Video size".
 
 Resume where you left off

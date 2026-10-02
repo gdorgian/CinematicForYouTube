@@ -6,6 +6,16 @@ html.cyt-on[dark] {
   --yt-spec-general-background-a: #0f0f0f;
 }
 
+/* Some text gets its colour written inline by YouTube's JS from the light theme
+   (e.g. channel names when a video lists several channels: color: rgb(19,19,19)).
+   Under Cinematic's dark skin, lift those near-black inline colours to the text colour. */
+html.cyt-dark [style*="color: rgb(19, 19, 19)"],
+html.cyt-dark [style*="color: rgb(15, 15, 15)"],
+html.cyt-dark [style*="color: rgb(13, 13, 13)"],
+html.cyt-dark [style*="color: rgb(3, 3, 3)"] {
+  color: var(--yt-spec-text-primary, #f1f1f1) !important;
+}
+
 /* ---------- Home stage on: freeze YouTube's page underneath ---------- */
 html.cyt-stage-on,
 html.cyt-stage-on body {
@@ -635,26 +645,6 @@ html.cyt-immersive ytd-watch-metadata #top-row #actions #actions-inner {
 #cyt-related {
   display: none;
 }
-.cyt-related-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 2px 4px;
-}
-.cyt-related-chips .cyt-chip {
-  flex: none;
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #f1f1f1;
-  font: 500 14px Roboto, Arial, sans-serif;
-  cursor: pointer;
-}
-.cyt-related-chips .cyt-chip:hover { background: rgba(255, 255, 255, 0.2); }
-.cyt-related-chips .cyt-chip.cyt-on { background: #f1f1f1; color: #0f0f0f; }
-
 /* no sidebar: recommendations become the "Up next" row, the rest goes full width
    (except with live chat open: the chat lives in the sidebar) */
 html.cyt-immersive ytd-watch-flexy:not([live-chat-present-and-expanded]) #secondary {

@@ -11,8 +11,8 @@
 //    buttons on the right (scaled up to fit the panel), and a "More videos" hint,
 //    so nothing else shows until you scroll
 //  - below the fold, the recommendations sidebar becomes a row of cards like
-//    Home's, with its chips (All / From … / Watched) above it; the description
-//    and comments below take the full width
+//    Home's; the description and comments below take the full width. (The
+//    sidebar's chips are left out: YouTube only refreshes them in the sidebar.)
 // The sidebar stays when live chat is open (the chat lives there).
 (() => {
   'use strict';
@@ -23,8 +23,7 @@
 
   let watchedFlexy = null;
   let overlay = null; // {el, key}
-  let chipsSig = '';
-  let related = null; // {el, chips, scroller, sig, updateArrows}
+  let related = null; // {el, scroller, sig, updateArrows}
   let moreEl = null;
   let statsEl = null;
 
@@ -59,36 +58,6 @@
       overlay.key = title;
       overlay.el.textContent = title;
     }
-  }
-
-  // ---------- related chips, shown above the recommendation cards ----------
-  function sourceChips() {
-    const rel = document.querySelector('#related');
-    if (!rel) return [];
-    return [...rel.querySelectorAll('chip-view-model, yt-chip-cloud-chip-renderer')]
-      .filter((el) => !el.parentElement.closest('chip-view-model, yt-chip-cloud-chip-renderer'))
-      .map((el) => {
-        const target = el.querySelector('button, a, #chip-container') || el;
-        return {
-          label: txt(el.querySelector('.ytChipShapeChip, #text, yt-formatted-string') || el),
-          selected: target.getAttribute('aria-selected') === 'true' || el.hasAttribute('selected'),
-          target,
-        };
-      })
-      .filter((c) => c.label);
-  }
-
-  function ensureChips() {
-    if (!related) return;
-    const chips = sourceChips();
-    const sig = chips.map((c) => c.label + (c.selected ? '*' : '')).join('|');
-    if (sig === chipsSig) return;
-    chipsSig = sig;
-    related.chips.replaceChildren(...chips.map((c) => {
-      const b = mk('button', c.selected ? 'cyt-chip cyt-on' : 'cyt-chip', c.label);
-      b.addEventListener('click', () => c.target.click()); // YouTube reloads #related
-      return b;
-    }));
   }
 
   // ---------- "Up next": the sidebar as a Home-style row of cards ----------
@@ -155,12 +124,10 @@
         right.classList.toggle('cyt-hidden', scroller.scrollLeft + scroller.clientWidth > scroller.scrollWidth - 10);
       };
       scroller.addEventListener('scroll', updateArrows, { passive: true });
-      const chips = mk('div', 'cyt-related-chips');
-      const el = mk('section', '', chips, mk('div', 'cyt-row-wrap', left, scroller, right));
+      const el = mk('section', '', mk('div', 'cyt-row-wrap', left, scroller, right));
       el.id = 'cyt-related';
       topRow.after(el);
-      related = { el, chips, scroller, sig: '', updateArrows };
-      chipsSig = '';
+      related = { el, scroller, sig: '', updateArrows };
     }
     const items = relatedItems();
     const sig = items.map((i) => i.id).join(',');
@@ -282,7 +249,6 @@
     if (on) {
       ensureOverlay();
       ensureRelated();
-      ensureChips();
       ensureStats();
       ensureMore();
       alignBar();
@@ -310,6 +276,6 @@
     if (root.classList.contains('cyt-immersive')) setTimeout(fitBand, 100);
   });
   document.addEventListener('fullscreenchange', sync);
-  // also picks up the title, chips and related videos once YouTube has rendered them
+  // also picks up the title, stats and related videos once YouTube has rendered them
   setInterval(sync, 1000);
 })();
