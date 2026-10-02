@@ -515,7 +515,21 @@ html.cyt-immersive ytd-watch-metadata #top-row {
   align-items: center;
   flex-wrap: nowrap;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 0 !important;
+}
+/* the bar sits right under the video: drop YouTube's spacing above it; watch.js
+   measures whatever gap is left and pulls the content up (--cyt-bar-pull) */
+html.cyt-immersive ytd-watch-flexy:not([live-chat-present-and-expanded]) #primary,
+html.cyt-immersive ytd-watch-flexy #below,
+html.cyt-immersive ytd-watch-metadata,
+html.cyt-immersive ytd-watch-metadata #above-the-fold,
+html.cyt-immersive ytd-watch-metadata #top-row > #owner,
+html.cyt-immersive ytd-watch-metadata #top-row > #actions {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+html.cyt-immersive ytd-watch-flexy #primary-inner {
+  margin-top: var(--cyt-bar-pull, 0px) !important;
 }
 html.cyt-immersive ytd-watch-metadata #top-row #actions {
   margin-left: auto;
@@ -557,17 +571,8 @@ html.cyt-immersive ytd-watch-flexy[live-chat-present-and-expanded] #cyt-related 
 }
 html.cyt-immersive #cyt-related {
   display: block;
-  --cyt-card-w: clamp(180px, 14vw, 280px);
-  margin: 18px 0 6px;
-}
-#cyt-related .cyt-row-head {
-  height: 30px;
-  padding: 0;
-}
-#cyt-related .cyt-row-head h2 {
-  margin: 0;
-  font: 600 18px "YouTube Sans", Roboto, Arial, sans-serif;
-  color: #f1f1f1;
+  --cyt-card-w: clamp(200px, 15.5vw, 310px);
+  margin: 10px 0 6px;
 }
 #cyt-related .cyt-row {
   padding: 6px 2px;

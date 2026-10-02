@@ -36,8 +36,8 @@ Video page: cinematic theater mode
   or paused); YouTube's own title line is hidden.
 - One bar under the video: channel + Subscribe, like/share/save/... and the
   related chips (All / From <channel> / Watched) on the right.
-- The recommendations sidebar becomes an "Up next" row of cards like Home's
-  (hover a card for its title, channel, views and date); description and
+- The recommendations sidebar becomes a row of cards like Home's, right under
+  the bar (hover a card for its title, channel, views and date); description and
   comments below take the full width. With live chat open the sidebar stays.
 - Popup: "Full-screen theater mode" on/off.
 

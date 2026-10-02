@@ -9,7 +9,7 @@
 //  - one bar under the video: channel + Subscribe and the like/share/... buttons
 //    (YouTube's own #top-row) with the related-video chips (All / From … /
 //    Watched) on the right
-//  - the recommendations sidebar becomes an "Up next" row of cards like Home's,
+//  - the recommendations sidebar becomes a row of cards like Home's (no heading),
 //    and the description and comments below take the full width
 // The sidebar stays when live chat is open (the chat lives there).
 (() => {
@@ -159,9 +159,7 @@
         right.classList.toggle('cyt-hidden', scroller.scrollLeft + scroller.clientWidth > scroller.scrollWidth - 10);
       };
       scroller.addEventListener('scroll', updateArrows, { passive: true });
-      const el = mk('section', '',
-        mk('div', 'cyt-row-head', mk('h2', '', 'Up next')),
-        mk('div', 'cyt-row-wrap', left, scroller, right));
+      const el = mk('section', '', mk('div', 'cyt-row-wrap', left, scroller, right));
       el.id = 'cyt-related';
       topRow.after(el);
       related = { el, scroller, sig: '', updateArrows };
@@ -173,6 +171,23 @@
     related.scroller.replaceChildren(...items.map(card));
     related.scroller.scrollLeft = 0;
     related.updateArrows();
+  }
+
+  // ---------- the bar sits right under the video ----------
+  // YouTube puts ~24px between the player and the bar, partly through spacing that
+  // no element reports as margin/padding, so measure the real gap and pull the
+  // content up by it (self-correcting if YouTube's spacing changes).
+  const BAR_GAP = 6;
+
+  function alignBar() {
+    const fb = document.querySelector('#full-bleed-container');
+    const bar = document.querySelector('ytd-watch-metadata #top-row');
+    if (!fb || !bar?.offsetHeight) return;
+    const gap = bar.getBoundingClientRect().top - fb.getBoundingClientRect().bottom;
+    if (Math.abs(gap - BAR_GAP) < 1) return;
+    const cur = parseFloat(root.style.getPropertyValue('--cyt-bar-pull')) || 0;
+    const next = Math.max(-80, Math.min(0, Math.round(cur - (gap - BAR_GAP))));
+    root.style.setProperty('--cyt-bar-pull', `${next}px`);
   }
 
   // ---------- state ----------
@@ -194,11 +209,13 @@
     if (on !== root.classList.contains('cyt-immersive')) {
       root.classList.toggle('cyt-immersive', on);
       refit();
+      if (on) setTimeout(alignBar, 300); // after the player has re-fitted
     }
     if (on) {
       ensureOverlay();
       ensureChips();
       ensureRelated();
+      alignBar();
     }
   }
 
