@@ -101,6 +101,11 @@
   // applies before YouTube's styles finish loading.
   const SKIN_KEY = 'cyt:darkskin';
   const DARK = '.cyt-dark.cyt-dark.cyt-dark';
+  // A few newer components don't use [dark] rules: JS gives them a separate "…Dark"
+  // class when the page is dark (search box, search button, suggestions). Their
+  // rules are copied too, onto the normal class under .cyt-dark.
+  const DARK_VARIANT = /\.(yt(?:Searchbox|Suggestion)Component[A-Za-z]*?)Dark(?![A-Za-z])/;
+  const DARK_VARIANT_ALL = new RegExp(DARK_VARIANT.source, 'g');
   const skinStyle = document.createElement('style');
   skinStyle.id = 'cyt-dark-skin';
   try { skinStyle.textContent = localStorage.getItem(SKIN_KEY) || ''; } catch {}
@@ -118,6 +123,12 @@
           const sel = r.selectorText;
           if (sel.indexOf('dark]') !== -1 && sel.indexOf(':not([dark])') === -1) {
             into.push(r.cssText.replace(/\[dark\]/g, DARK));
+          } else if (sel.indexOf('Dark') !== -1 && DARK_VARIANT.test(sel)) {
+            const scoped = sel.split(',')
+              .filter((part) => DARK_VARIANT.test(part))
+              .map((part) => `${DARK} ${part.trim().replace(DARK_VARIANT_ALL, '.$1')}`)
+              .join(', ');
+            into.push(`${scoped} { ${r.style.cssText} }`);
           }
         } else if (r.cssRules) {
           const inner = [];

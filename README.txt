@@ -34,7 +34,8 @@ Video page: cinematic theater mode
 - The top bar is hidden; move the mouse to the top edge to bring it back.
 - The title appears over the video whenever YouTube's controls show (mouse move,
   or paused); YouTube's own title line is hidden.
-- Under the video, a glass panel fills exactly the rest of the screen: channel +
+- Under the video, a dark glass panel (readable over any glow) fills exactly the
+  rest of the screen: channel +
   Subscribe on the left, views and date in the middle, like/share/save/... on
   the right, all scaled up to fit, and a "More videos" hint at the bottom.
   Nothing else shows until you scroll.
@@ -59,7 +60,8 @@ Netflix mode and Theater mode are independent: use either or both.
 Light and dark
 - Works with YouTube set to light or dark. In light mode Cinematic shows
   YouTube's own dark theme (copied from YouTube's stylesheets, re-scoped to a
-  Cinematic class) on Home, in theater mode and with ambient light on. It never
+  Cinematic class; also the search box's own dark variant) on Home, in theater
+  mode and with ambient light on. It never
   flips YouTube's own theme switch: that makes YouTube reload the page on every
   click ("themeRefresh"), which is what made videos slow to open.
 
@@ -73,6 +75,8 @@ Video page: ambient light
 - Popup: Ambient light on/off, "only in theater mode", Glow spread (default 122),
   Glow blur (default 38), Glow strength. Defaults are the values exported from your Ambient Light setup.
 - Replaces YouTube's own (subtler) ambient mode.
+- In the theater layout the glow fades out at the bottom of the first screen, so
+  the recommendations, description and comments below stay on a plain dark page.
 - Light on the battery: one 128px downscale of the frame, ~9 tiny draws, at most
   30 fps; the GPU does the blur.
 - Test bench: test/ambient.html (a fake watch page with a test-pattern video;

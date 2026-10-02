@@ -99,12 +99,17 @@
     const blur = r.height * 0.0025 * S.ambientBlur;
     const room = blur * 2; // space for the blur to fade out before the clip box ends
 
-    // the box is clipped to the window width so it never adds a sideways scrollbar
+    // the box is clipped to the window width so it never adds a sideways scrollbar;
+    // in Cinematic's theater layout it also stops at the bottom of the first screen
+    // (the panel under the video), so below the fold the page stays plainly dark
+    const boxTop = r.top + window.scrollY - reach - room;
+    let boxH = gh + 2 * room;
+    if (root.classList.contains('cyt-immersive')) boxH = Math.min(boxH, window.innerHeight - boxTop);
     Object.assign(amb.el.style, {
       left: '0px',
-      top: `${r.top + window.scrollY - reach - room}px`,
+      top: `${boxTop}px`,
       width: `${document.documentElement.clientWidth}px`,
-      height: `${gh + 2 * room}px`,
+      height: `${boxH}px`,
     });
     Object.assign(amb.canvas.style, {
       left: `${r.left + window.scrollX - reach}px`,
