@@ -1,4 +1,4 @@
-Cinematic — Netflix-style YouTube (personal rebuild) — v3.7
+Cinematic — Netflix-style YouTube (personal rebuild) — v3.8
 ===========================================================
 
 Install / update in Brave
@@ -34,24 +34,34 @@ Video page: cinematic theater mode
 - The top bar is hidden; move the mouse to the top edge to bring it back.
 - The title appears over the video whenever YouTube's controls show (mouse move,
   or paused); YouTube's own title line is hidden.
-- The band under the video fills exactly the rest of the screen: channel +
-  Subscribe on the left, like/share/save/... on the right, "More videos" hint at
-  the bottom. Nothing else shows until you scroll.
+- Under the video, a glass panel fills exactly the rest of the screen: channel +
+  Subscribe on the left, views and date in the middle, like/share/save/... on
+  the right, all scaled up to fit, and a "More videos" hint at the bottom.
+  Nothing else shows until you scroll.
 - Below the fold: the recommendations as a row of cards like Home's, with their
   chips (All / From <channel> / Watched) above; description and comments take
   the full width. With live chat open the sidebar stays.
-- Popup: "Full-screen theater mode" on/off.
+- Popup: "Theater mode" switch and "Video size".
 
 Resume where you left off
 - Cinematic remembers your position in every video (last 300) and jumps back
   there when you reopen or reload it, unless the link has its own start time,
   YouTube already resumed, or you had nearly finished.
 
-YouTube theme
-- Cinematic never changes YouTube's theme: forcing dark while YouTube is set to
-  light makes YouTube reload the page on every click ("themeRefresh"), which made
-  videos slow to open and start several times. Set YouTube to Dark yourself
-  (profile picture > Appearance > Dark theme); the ambient light needs it.
+Popup
+- Enable Cinematic (everything)
+- Netflix mode (Home screen) + previews with sound
+- Theater mode (new video layout) + video size
+- Ambient light + only in theater mode, spread, blur, strength
+- Hide Shorts everywhere
+Netflix mode and Theater mode are independent: use either or both.
+
+Light and dark
+- Works with YouTube set to light or dark. In light mode Cinematic shows
+  YouTube's own dark theme (copied from YouTube's stylesheets, re-scoped to a
+  Cinematic class) on Home, in theater mode and with ambient light on. It never
+  flips YouTube's own theme switch: that makes YouTube reload the page on every
+  click ("themeRefresh"), which is what made videos slow to open.
 
 Video page: ambient light
 - While a video plays, its colours glow out around the player and under the

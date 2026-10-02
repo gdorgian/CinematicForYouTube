@@ -9,7 +9,7 @@
 (() => {
   'use strict';
 
-  const DEFAULTS = { enabled: true, sound: false, hideShorts: true };
+  const DEFAULTS = { enabled: true, netflixHome: true, sound: false, hideShorts: true };
   let S = { ...DEFAULTS };
   const root = document.documentElement;
   const isHome = () => location.pathname === '/';
@@ -89,6 +89,74 @@
 
   const metaLine = (item) => [item.views, item.date].filter(Boolean).join(' • ');
 
+  // ---------- dark skin: YouTube's own dark theme, without touching [dark] ----------
+  // Cinematic must look right whether YouTube is set to light or dark. Flipping
+  // YouTube's html[dark] attribute isn't an option: when it differs from the user's
+  // appearance setting YouTube reloads the page on every navigation (themeRefresh).
+  // Instead we copy every CSS rule YouTube scopes to [dark] (its whole dark palette
+  // and component tweaks, ~30 rules / 40 KB, ~20 ms to scan) and re-scope it to our
+  // own class .cyt-dark, set on <html> while a Cinematic surface is showing (Home
+  // stage, theater layout, ambient light). The selector is tripled so it outranks
+  // YouTube's light rules (some use :root:root). Cached in localStorage so it
+  // applies before YouTube's styles finish loading.
+  const SKIN_KEY = 'cyt:darkskin';
+  const DARK = '.cyt-dark.cyt-dark.cyt-dark';
+  const skinStyle = document.createElement('style');
+  skinStyle.id = 'cyt-dark-skin';
+  try { skinStyle.textContent = localStorage.getItem(SKIN_KEY) || ''; } catch {}
+  (document.head || document.documentElement).append(skinStyle);
+
+  let scannedSheets = -1;
+  function buildSkin() {
+    if (document.styleSheets.length === scannedSheets) return;
+    scannedSheets = document.styleSheets.length;
+    const out = [];
+    const walk = (rules, into) => {
+      for (let i = 0; i < rules.length; i++) {
+        const r = rules[i];
+        if (r.type === 1) {
+          const sel = r.selectorText;
+          if (sel.indexOf('dark]') !== -1 && sel.indexOf(':not([dark])') === -1) {
+            into.push(r.cssText.replace(/\[dark\]/g, DARK));
+          }
+        } else if (r.cssRules) {
+          const inner = [];
+          walk(r.cssRules, inner);
+          if (inner.length) into.push(`${r.cssText.slice(0, r.cssText.indexOf('{'))}{${inner.join('\n')}}`);
+        }
+      }
+    };
+    for (const sheet of document.styleSheets) {
+      if (sheet.ownerNode === skinStyle) continue;
+      let rules;
+      try { rules = sheet.cssRules; } catch { continue; } // cross-origin sheet
+      walk(rules, out);
+    }
+    if (!out.length) return;
+    const css = out.join('\n');
+    if (css !== skinStyle.textContent) {
+      skinStyle.textContent = css;
+      try { localStorage.setItem(SKIN_KEY, css); } catch {}
+    }
+  }
+  // YouTube keeps adding stylesheets while it boots and when components load
+  document.addEventListener('DOMContentLoaded', buildSkin);
+  window.addEventListener('load', buildSkin);
+  document.addEventListener('yt-navigate-finish', buildSkin);
+  let skinChecks = 0;
+  const skinTimer = setInterval(() => {
+    buildSkin();
+    if (++skinChecks > 15) clearInterval(skinTimer);
+  }, 2000);
+
+  // .cyt-dark while a Cinematic surface shows and YouTube itself is light
+  function updateSkin() {
+    const want = !root.hasAttribute('dark') && root.classList.contains('cyt-on')
+      && ['cyt-stage-on', 'cyt-pending', 'cyt-immersive', 'cyt-amb-on'].some((c) => root.classList.contains(c));
+    if (want !== root.classList.contains('cyt-dark')) root.classList.toggle('cyt-dark', want);
+  }
+  new MutationObserver(updateSkin).observe(root, { attributes: true, attributeFilter: ['class', 'dark'] });
+
   // ---------- Home: hide YouTube's grid until the stage is ready ----------
   // Avoids a flash of the normal layout (and YouTube's own hover previews) while the
   // feed loads. Falls back to the normal page if no stage appears (e.g. signed out).
@@ -120,7 +188,7 @@
     if (area !== 'sync') return;
     for (const [k, { newValue }] of Object.entries(changes)) S[k] = newValue ?? DEFAULTS[k];
     applyClasses();
-    if (!S.enabled) teardown();
+    if (!S.enabled || !S.netflixHome) teardown();
     schedule();
   });
 
@@ -705,9 +773,9 @@
 
   function sync() {
     const browse = homeBrowse();
-    if (!(S.enabled && isHome() && browse && !browse.hasAttribute('hidden'))) {
+    if (!(S.enabled && S.netflixHome && isHome() && browse && !browse.hasAttribute('hidden'))) {
       teardown();
-      if (!isHome() || !S.enabled) setPending(false);
+      if (!isHome() || !S.enabled || !S.netflixHome) setPending(false);
       return;
     }
     const items = readFeed();

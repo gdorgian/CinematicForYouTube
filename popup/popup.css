@@ -16,7 +16,11 @@ body {
   font-weight: 600;
 }
 .row.sub { font-weight: 400; font-size: 13px; color: #bbb; }
-body.off .row.sub { opacity: 0.4; pointer-events: none; }
+.row.master { padding-bottom: 10px; }
+.row.head small { margin-left: 4px; font-weight: 400; font-size: 11px; color: #888; }
+section { padding: 6px 0 4px; border-top: 1px solid #2c2c2c; }
+/* a section's details are dimmed while its own switch (or the master) is off */
+body.off section, section.off .row.sub { opacity: 0.4; pointer-events: none; }
 .switch { position: relative; width: 36px; height: 20px; flex: none; }
 .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
 .switch > span {

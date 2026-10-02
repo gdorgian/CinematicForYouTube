@@ -1,6 +1,6 @@
 // Keep in sync with DEFAULTS in content.js, ambient.js and watch.js
 const DEFAULTS = {
-  enabled: true, sound: false, hideShorts: true,
+  enabled: true, netflixHome: true, sound: false, hideShorts: true,
   immersiveTheater: true, theaterSize: 85,
   ambient: true, ambientTheaterOnly: false, ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
 };
@@ -12,6 +12,9 @@ function render(s) {
     else el.checked = !!s[el.dataset.key];
   }
   document.body.classList.toggle('off', !s.enabled);
+  for (const sec of document.querySelectorAll('section[data-needs]')) {
+    sec.classList.toggle('off', !s[sec.dataset.needs]);
+  }
 }
 
 chrome.storage.sync.get(DEFAULTS, render);

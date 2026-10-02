@@ -6,9 +6,10 @@
 //    mouse nears the top edge (content.js handles the reveal for .cyt-immersive)
 //  - the title appears over the video together with YouTube's own controls
 //    (it follows the player's ytp-autohide class); YouTube's title line is hidden
-//  - the band under the video fills exactly the rest of the screen: channel +
-//    Subscribe on the left, YouTube's like/share/... buttons on the right and a
-//    "More videos" hint, so nothing else shows until you scroll
+//  - under the video a glass panel fills exactly the rest of the screen: channel +
+//    Subscribe on the left, views • date in the middle, YouTube's like/share/...
+//    buttons on the right (scaled up to fit the panel), and a "More videos" hint,
+//    so nothing else shows until you scroll
 //  - below the fold, the recommendations sidebar becomes a row of cards like
 //    Home's, with its chips (All / From … / Watched) above it; the description
 //    and comments below take the full width
@@ -25,6 +26,7 @@
   let chipsSig = '';
   let related = null; // {el, chips, scroller, sig, updateArrows}
   let moreEl = null;
+  let statsEl = null;
 
   const flexy = () => document.querySelector('ytd-watch-flexy');
   const txt = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -169,6 +171,62 @@
     related.updateArrows();
   }
 
+  // ---------- views • date in the middle of the panel ----------
+  function ensureStats() {
+    const row = document.querySelector('ytd-watch-metadata #top-row');
+    const owner = row?.querySelector('#owner');
+    if (!owner) return;
+    if (!statsEl || !row.contains(statsEl)) {
+      statsEl?.remove();
+      statsEl = mk('div');
+      statsEl.id = 'cyt-stats';
+      owner.after(statsEl);
+      statsEl.dataset.key = '';
+    }
+    const parts = [...document.querySelectorAll('ytd-watch-metadata ytd-watch-info-text #info span')]
+      .map((el) => txt(el)).filter(Boolean).slice(0, 2);
+    const key = parts.join('|');
+    if (!key || key === statsEl.dataset.key) return;
+    statsEl.dataset.key = key;
+    statsEl.replaceChildren(mk('b', '', parts[0]), ...(parts[1] ? [mk('i'), mk('span', '', parts[1])] : []));
+  }
+
+  // ---------- scale the panel's contents to the space it has ----------
+  // YouTube's channel block and buttons are ~43px tall; the panel is usually 2-3x
+  // that. CSS zoom (on a variable) scales them up as a whole, capped by the width
+  // available so nothing overflows; the middle stats drop out first when tight.
+  function fitBand() {
+    const row = document.querySelector('ytd-watch-metadata #top-row');
+    const owner = row?.querySelector('#owner');
+    const actions = row?.querySelector('#actions');
+    if (!owner || !actions || !row.offsetHeight) return;
+    const zoom = parseFloat(root.style.getPropertyValue('--cyt-band-zoom')) || 1;
+    const ownerW = owner.getBoundingClientRect().width / zoom;
+    const actionsW = (actions.querySelector('#top-level-buttons-computed, #actions-inner') || actions)
+      .getBoundingClientRect().width / zoom;
+    // the text's own width (the element itself stretches to fill the middle)
+    let statsW = 0;
+    if (statsEl?.firstChild) {
+      const range = document.createRange();
+      range.selectNodeContents(statsEl);
+      statsW = range.getBoundingClientRect().width / zoom;
+    }
+    const pad = 96; // panel padding + gaps
+    const byHeight = ((row.clientHeight - 22) * 0.52) / 43;
+    const fits = (z, withStats) => (ownerW + actionsW + (withStats ? statsW + 48 : 0)) * z + pad <= row.clientWidth;
+    let z = Math.max(1, Math.min(1.45, byHeight));
+    let withStats = true;
+    while (z > 1 && !fits(z, true)) z -= 0.05;
+    if (!fits(z, true)) {
+      withStats = false;
+      z = Math.max(1, Math.min(1.45, byHeight));
+      while (z > 1 && !fits(z, false)) z -= 0.05;
+    }
+    z = Math.round(z * 100) / 100;
+    if (Math.abs(z - zoom) > 0.01) root.style.setProperty('--cyt-band-zoom', String(z));
+    root.classList.toggle('cyt-band-tight', !withStats);
+  }
+
   // ---------- "More videos" hint at the bottom of the band ----------
   function ensureMore() {
     const row = document.querySelector('ytd-watch-metadata #top-row');
@@ -225,8 +283,10 @@
       ensureOverlay();
       ensureRelated();
       ensureChips();
+      ensureStats();
       ensureMore();
       alignBar();
+      fitBand();
     }
   }
 
@@ -246,6 +306,9 @@
   });
 
   document.addEventListener('yt-navigate-finish', sync);
+  window.addEventListener('resize', () => {
+    if (root.classList.contains('cyt-immersive')) setTimeout(fitBand, 100);
+  });
   document.addEventListener('fullscreenchange', sync);
   // also picks up the title, chips and related videos once YouTube has rendered them
   setInterval(sync, 1000);

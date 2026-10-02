@@ -496,10 +496,11 @@ html.cyt-immersive #movie_player:not(.ytp-autohide) #cyt-watch-info {
   transform: none;
 }
 
-/* the title line goes (it's on the video). The band under the video fills exactly
-   the rest of the screen (100vh - video - the 6px gap watch.js keeps), so the
-   recommendations start below the fold. Channel left, buttons right, both centred
-   vertically; a "More videos" hint at the bottom. */
+/* the title line goes (it's on the video). Under the video a floating glass panel
+   fills exactly the rest of the screen (100vh - video - the 6px gap watch.js
+   keeps - 10px below), so the recommendations start below the fold. Channel left,
+   views • date in the middle, buttons right, all scaled by watch.js
+   (--cyt-band-zoom) to fill the panel; a "More videos" hint at the bottom. */
 html.cyt-immersive ytd-watch-metadata #title-row {
   display: none !important;
 }
@@ -508,11 +509,67 @@ html.cyt-immersive ytd-watch-metadata #top-row {
   display: flex !important;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 12px;
+  gap: 24px;
   box-sizing: border-box;
-  min-height: calc(100vh - var(--cyt-theater-h, 85vh) - 6px);
-  margin-top: 0 !important;
-  padding: 0 4px 22px; /* room for the hint */
+  min-height: calc(100vh - var(--cyt-theater-h, 85vh) - 16px);
+  margin: 0 0 10px !important;
+  padding: 0 clamp(18px, 2.2vw, 36px) 22px; /* bottom: room for the hint */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(24px) saturate(1.3);
+  animation: cyt-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes cyt-rise {
+  from { opacity: 0; transform: translateY(10px); }
+}
+html.cyt-immersive ytd-watch-metadata #top-row > #owner,
+html.cyt-immersive ytd-watch-metadata #top-row > #actions,
+html.cyt-immersive #cyt-stats {
+  zoom: var(--cyt-band-zoom, 1);
+}
+html.cyt-immersive ytd-watch-metadata #top-row > #owner {
+  flex: none;
+}
+html.cyt-immersive ytd-watch-metadata #top-row > #actions {
+  flex: none;
+  min-width: 0 !important;
+  width: auto !important;
+}
+html.cyt-immersive ytd-watch-metadata #top-row > #actions button {
+  transition: transform 0.18s ease, background-color 0.18s ease;
+}
+html.cyt-immersive ytd-watch-metadata #top-row > #actions button:hover {
+  transform: translateY(-1px);
+}
+#cyt-stats {
+  display: none;
+}
+html.cyt-immersive #cyt-stats {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  white-space: nowrap;
+  color: var(--yt-spec-text-secondary, #aaa);
+  font: 500 15px "YouTube Sans", Roboto, Arial, sans-serif;
+}
+html.cyt-immersive.cyt-band-tight #cyt-stats {
+  visibility: hidden;
+}
+#cyt-stats b {
+  color: var(--yt-spec-text-primary, #f1f1f1);
+  font-weight: 600;
+}
+#cyt-stats i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
 }
 #cyt-more {
   display: none;
@@ -563,6 +620,10 @@ html.cyt-immersive ytd-watch-flexy #primary-inner {
 }
 html.cyt-immersive ytd-watch-metadata #top-row #actions {
   margin-left: auto;
+}
+html.cyt-immersive ytd-watch-metadata #top-row #actions #top-level-buttons-computed,
+html.cyt-immersive ytd-watch-metadata #top-row #actions #actions-inner {
+  width: auto !important;
 }
 #cyt-related {
   display: none;
