@@ -28,6 +28,14 @@ Home page
   search, Create, notifications and your profile.
 - Keyboard: ← → video, ↑ ↓ row, Enter play, M sound.
 
+Video page: full-screen theater mode
+- In theater mode the video fills the whole window. Title, buttons and
+  recommendations sit below it: scroll down to reach them.
+- The top bar is hidden; move the mouse to the top edge to bring it back.
+- Channel (with avatar) and title appear over the video, bottom-left, whenever
+  YouTube's own controls show (mouse move, or paused).
+- Popup: "Full-screen theater mode" on/off.
+
 Video page: ambient light
 - While a video plays, its colours glow out around the player and under the
   translucent top bar, on a pure black page. Same technique as "Ambient light for
@@ -35,8 +43,8 @@ Video page: ambient light
   width, so the light on each side comes from that side's edge of the picture;
   the outer part fades to black. Follows the player in normal and theater mode;
   off in fullscreen.
-- Popup: Ambient light on/off, Glow spread (default 122), Glow blur (default 38),
-  Glow strength. Defaults are the values exported from your Ambient Light setup.
+- Popup: Ambient light on/off, "only in theater mode", Glow spread (default 122),
+  Glow blur (default 38), Glow strength. Defaults are the values exported from your Ambient Light setup.
 - Replaces YouTube's own (subtler) ambient mode.
 - Light on the battery: one 128px downscale of the frame, ~9 tiny draws, at most
   30 fps; the GPU does the blur.

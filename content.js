@@ -403,25 +403,27 @@
   document.addEventListener('visibilitychange', updatePlayback);
 
   // ---------- top bar: hidden until the mouse nears the top edge ----------
+  // Active on the Home stage and in immersive theater mode (watch.js sets .cyt-immersive).
   const typingInTopbar = () => !!document.activeElement?.closest?.('ytd-masthead');
+  const topbarActive = () => !!st || root.classList.contains('cyt-immersive');
+  let topbarTimer = 0;
 
   function revealTopbar(near) {
-    if (!st) return;
+    if (!topbarActive()) return;
     if (near) {
-      clearTimeout(st.topbarTimer);
-      st.topbarTimer = 0;
+      clearTimeout(topbarTimer);
+      topbarTimer = 0;
       root.classList.add('cyt-topbar');
       return;
     }
-    if (!root.classList.contains('cyt-topbar') || st.topbarTimer) return;
-    st.topbarTimer = setTimeout(function hide() {
-      if (!st) return;
+    if (!root.classList.contains('cyt-topbar') || topbarTimer) return;
+    topbarTimer = setTimeout(function hide() {
       if (typingInTopbar()) {
-        st.topbarTimer = setTimeout(hide, 800); // keep it up while you type a search
+        topbarTimer = setTimeout(hide, 800); // keep it up while you type a search
         return;
       }
       root.classList.remove('cyt-topbar');
-      st.topbarTimer = 0;
+      topbarTimer = 0;
     }, 800);
   }
 
@@ -430,7 +432,7 @@
   });
 
   document.addEventListener('mousemove', (e) => {
-    if (!st) return;
+    if (!topbarActive()) return;
     revealTopbar(e.clientY < 90 || !!e.target.closest?.('ytd-masthead, ytd-popup-container, tp-yt-iron-dropdown'));
   }, { passive: true });
 
@@ -469,7 +471,7 @@
     const s = {
       el, bg, avatar, chan, meta, title, mute, rowsEl, track,
       rows: [], cur: { row: null, i: -1 }, viewRow: null, wheelAcc: 0, wheelLast: 0, wheelLocked: false,
-      muted: !S.sound, wantPlay: shouldPlay(), hoverTimer: 0, topbarTimer: 0, loadingMore: false,
+      muted: !S.sound, wantPlay: shouldPlay(), hoverTimer: 0, loadingMore: false,
     };
 
     const paintMute = () => {
@@ -701,7 +703,6 @@
     send('destroy');
     send('stage', { on: false });
     clearTimeout(st.hoverTimer);
-    clearTimeout(st.topbarTimer);
     st.el.remove();
     st = null;
     root.classList.remove('cyt-stage-on', 'cyt-topbar');

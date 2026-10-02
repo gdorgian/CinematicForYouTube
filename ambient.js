@@ -16,7 +16,10 @@
 
   // Defaults = the user's own "Ambient light for YouTube" settings (spread 122.1,
   // blur 38.2, edge 15.3), exported 2026-10-02.
-  const DEFAULTS = { enabled: true, ambient: true, ambientStrength: 1, ambientSpread: 122, ambientBlur: 38 };
+  const DEFAULTS = {
+    enabled: true, ambient: true, ambientTheaterOnly: false,
+    ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
+  };
   let S = { ...DEFAULTS };
   const root = document.documentElement;
 
@@ -30,7 +33,10 @@
 
   let amb = null;
 
-  const wanted = () => S.enabled && S.ambient && location.pathname === '/watch';
+  const flexy = () => document.querySelector('ytd-watch-flexy');
+  const inTheater = () => !!flexy()?.hasAttribute('theater');
+  const wanted = () => S.enabled && S.ambient && location.pathname === '/watch'
+    && (!S.ambientTheaterOnly || inTheater());
   const mainVideo = () => document.querySelector('#movie_player video.html5-main-video, #movie_player video');
 
   // ---------- drawing ----------
@@ -195,7 +201,15 @@
     amb?.el.style.setProperty('--cyt-amb-strength', String(S.ambientStrength));
   }
 
+  let watchedFlexy = null;
+
   function sync() {
+    const f = flexy();
+    if (f && f !== watchedFlexy) {
+      // theater toggles take effect right away (for "only in theater mode")
+      watchedFlexy = f;
+      new MutationObserver(sync).observe(f, { attributes: true, attributeFilter: ['theater'] });
+    }
     const video = wanted() && mainVideo();
     if (!video) {
       stop();

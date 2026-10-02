@@ -437,3 +437,80 @@ html.cyt-amb-on ytd-watch-flexy #below,
 html.cyt-amb-on ytd-watch-flexy #secondary {
   text-shadow: 0 0 3px rgba(0, 0, 0, 0.3), 0 0 6px rgba(0, 0, 0, 0.3);
 }
+
+/* ---------- immersive theater mode (watch.js sets .cyt-immersive) ---------- */
+/* the video fills the window; title, buttons and recommendations sit below it */
+html.cyt-immersive ytd-page-manager {
+  margin-top: 0 !important;
+}
+html.cyt-immersive ytd-watch-flexy[theater]:not([fullscreen]) #full-bleed-container {
+  height: 100vh !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+/* top bar hidden until the mouse nears the top edge (content.js toggles .cyt-topbar).
+   Comes after the ambient rules on purpose: here the bar is clear, not dark glass. */
+html.cyt-immersive #masthead-container {
+  opacity: 0;
+  backdrop-filter: none !important;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.75), transparent) !important;
+  transition: opacity 0.25s ease;
+}
+html.cyt-immersive.cyt-topbar #masthead-container {
+  opacity: 1;
+}
+html.cyt-immersive #masthead-container ytd-masthead,
+html.cyt-immersive #masthead-container ytd-masthead #background {
+  background: transparent !important;
+}
+html.cyt-immersive #frosted-glass {
+  visibility: hidden !important;
+}
+
+/* channel + title over the video, shown together with YouTube's own controls */
+#cyt-watch-info {
+  display: none;
+  position: absolute;
+  left: 32px;
+  bottom: 78px;
+  z-index: 40;
+  max-width: min(60%, 900px);
+  color: #fff;
+  font-family: "YouTube Sans", Roboto, "Helvetica Neue", Arial, sans-serif;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+html.cyt-immersive #cyt-watch-info {
+  display: block;
+}
+html.cyt-immersive #movie_player:not(.ytp-autohide) #cyt-watch-info {
+  opacity: 1;
+  transform: none;
+}
+.cyt-wi-channel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 600;
+}
+.cyt-wi-channel img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.cyt-wi-title {
+  font-size: clamp(26px, 2.6vw, 46px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
