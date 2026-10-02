@@ -399,7 +399,9 @@ html.cyt-amb-on {
   background: #000 !important;
 }
 html.cyt-amb-on ytd-app,
-html.cyt-amb-on #player-full-bleed-container {
+html.cyt-amb-on #full-bleed-container {
+  /* #full-bleed-container is the full-width black band behind the player in theater
+     and wide layouts; without this the glow only shows above and below the video */
   background: transparent !important;
 }
 /* YouTube's own (much subtler) ambient mode would double up with ours */
@@ -426,7 +428,7 @@ html.cyt-amb-on #masthead-container {
 }
 #cyt-amb canvas {
   position: absolute;
-  filter: blur(72px) saturate(1.3);
+  filter: blur(90px) saturate(1.3);
   opacity: var(--cyt-amb-strength, 0.8);
   transition: opacity 0.4s ease;
 }

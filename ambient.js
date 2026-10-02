@@ -42,9 +42,9 @@
   // picture area inside the player). The glow is SPREAD larger than the picture;
   // its box is clipped to the window width so it can never add a sideways
   // scrollbar (theater mode), with BLUR_ROOM above/below for the soft fade.
-  const SPREAD_X = 0.14;
-  const SPREAD_Y = 0.18;
-  const BLUR_ROOM = 160;
+  const SPREAD_X = 0.25;
+  const SPREAD_Y = 0.3;
+  const BLUR_ROOM = 200;
 
   function place() {
     if (!amb) return;
