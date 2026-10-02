@@ -19,9 +19,9 @@ html.cyt-stage-on #frosted-glass {
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
-/* top bar: the search box always shows; logo + Create/bell/profile fade in when the
-   mouse nears the top edge (content.js toggles .cyt-topbar). The menu button, mic and
-   AI button stay hidden. visibility (not display) keeps the search box centred. */
+/* top bar: fully hidden; logo, search, Create/bell/profile fade in when the mouse
+   nears the top edge (content.js toggles .cyt-topbar). The menu button, mic and AI
+   button stay hidden. visibility (not display) keeps the search box centred. */
 html.cyt-stage-on ytd-masthead #guide-button,
 html.cyt-stage-on ytd-masthead #back-button,
 html.cyt-stage-on ytd-masthead #voice-search-button,
@@ -30,12 +30,14 @@ html.cyt-stage-on ytd-masthead #ai-companion-button {
   pointer-events: none !important;
 }
 html.cyt-stage-on ytd-masthead #start,
+html.cyt-stage-on ytd-masthead #center,
 html.cyt-stage-on ytd-masthead #end {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 html.cyt-stage-on.cyt-topbar ytd-masthead #start,
+html.cyt-stage-on.cyt-topbar ytd-masthead #center,
 html.cyt-stage-on.cyt-topbar ytd-masthead #end {
   opacity: 1;
   visibility: visible;
@@ -243,22 +245,24 @@ html.cyt-stage-on ytd-video-preview {
 .cyt-prev { left: 1.5%; }
 .cyt-next { right: 1.5%; }
 
-/* ---------- rows: the panel is one row tall; scroll / ↑↓ snap between rows ---------- */
+/* ---------- rows: a one-row window; content.js slides the track one row per gesture ---------- */
 .cyt-rows {
-  position: relative; /* so each row's offsetTop is measured from here (goRow) */
   --cyt-card-w: clamp(190px, 16vw, 300px);
-  /* whole pixels: a fractional row height leaves the last row unable to snap into place */
-  height: round(down, calc(var(--cyt-card-w) * 0.5625 + 50px), 1px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scroll-snap-type: y mandatory;
-  scrollbar-width: none;
+  /* whole pixels, so rows line up exactly with the window */
+  --cyt-rows-h: round(down, calc(var(--cyt-card-w) * 0.5625 + 50px), 1px);
+  position: relative;
+  height: var(--cyt-rows-h);
+  overflow: hidden;
 }
-.cyt-rows::-webkit-scrollbar { display: none; }
+.cyt-rows-track {
+  position: relative; /* rows' offsetTop is measured from here (goRow) */
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cyt-rows-track.cyt-instant {
+  transition: none;
+}
 .cyt-block {
-  height: 100%;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  height: var(--cyt-rows-h);
 }
 .cyt-row-head {
   display: flex;
@@ -289,6 +293,7 @@ html.cyt-stage-on ytd-video-preview {
   position: relative;
 }
 .cyt-row {
+  position: relative; /* cards' offsetLeft is measured from here (revealCard) */
   display: flex;
   gap: 12px;
   padding: 6px 6%;

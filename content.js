@@ -359,7 +359,7 @@
   }
 
   // ---------- battery: pause when idle, unfocused or hidden ----------
-  const IDLE_MS = 3 * 60 * 1000;
+  const IDLE_MS = 2 * 60 * 1000;
   let lastActivity = Date.now();
   let idle = false;
   const shouldPlay = () => !document.hidden && document.hasFocus() && !idle;
@@ -391,7 +391,9 @@
   window.addEventListener('blur', updatePlayback);
   document.addEventListener('visibilitychange', updatePlayback);
 
-  // ---------- top bar: logo + account buttons appear near the top edge ----------
+  // ---------- top bar: hidden until the mouse nears the top edge ----------
+  const typingInTopbar = () => !!document.activeElement?.closest?.('ytd-masthead');
+
   function revealTopbar(near) {
     if (!st) return;
     if (near) {
@@ -401,11 +403,20 @@
       return;
     }
     if (!root.classList.contains('cyt-topbar') || st.topbarTimer) return;
-    st.topbarTimer = setTimeout(() => {
+    st.topbarTimer = setTimeout(function hide() {
+      if (!st) return;
+      if (typingInTopbar()) {
+        st.topbarTimer = setTimeout(hide, 800); // keep it up while you type a search
+        return;
+      }
       root.classList.remove('cyt-topbar');
-      if (st) st.topbarTimer = 0;
+      st.topbarTimer = 0;
     }, 800);
   }
+
+  document.addEventListener('focusin', (e) => {
+    if (e.target.closest?.('ytd-masthead')) revealTopbar(true); // e.g. "/" focuses search
+  });
 
   document.addEventListener('mousemove', (e) => {
     if (!st) return;
@@ -427,7 +438,8 @@
     const mute = mk('button', { class: 'cyt-btn cyt-mute' });
     const prev = mk('button', { class: 'cyt-arrow cyt-prev', title: 'Previous' }, svg(P.left, 28));
     const next = mk('button', { class: 'cyt-arrow cyt-next', title: 'Next' }, svg(P.right, 28));
-    const rowsEl = mk('div', { class: 'cyt-rows' });
+    const track = mk('div', { class: 'cyt-rows-track' });
+    const rowsEl = mk('div', { class: 'cyt-rows' }, track);
 
     el.append(
       mk('div', { class: 'cyt-media' }, bg, video),
@@ -444,8 +456,8 @@
     document.body.append(el);
 
     const s = {
-      el, bg, avatar, chan, meta, title, mute, rowsEl,
-      rows: [], cur: { row: null, i: -1 },
+      el, bg, avatar, chan, meta, title, mute, rowsEl, track,
+      rows: [], cur: { row: null, i: -1 }, viewRow: null, wheelAcc: 0, wheelLast: 0, wheelLocked: false,
       muted: !S.sound, wantPlay: shouldPlay(), hoverTimer: 0, topbarTimer: 0, loadingMore: false,
     };
 
@@ -464,6 +476,26 @@
     });
     prev.addEventListener('click', () => select(s.cur.row, s.cur.i - 1, true));
     next.addEventListener('click', () => select(s.cur.row, s.cur.i + 1, true));
+
+    // Scrolling up/down anywhere on the stage moves exactly one row per gesture:
+    // trackpad momentum keeps firing wheel events for a second or so, and those are
+    // swallowed until the gesture ends. Sideways swipes / shift+wheel scroll the row.
+    el.addEventListener('wheel', (e) => {
+      if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      const now = performance.now();
+      if (now - s.wheelLast > 250) {
+        s.wheelAcc = 0;
+        s.wheelLocked = false;
+      }
+      s.wheelLast = now;
+      if (s.wheelLocked) return;
+      s.wheelAcc += e.deltaY;
+      if (Math.abs(s.wheelAcc) >= 40) {
+        s.wheelLocked = true;
+        stepRow(Math.sign(s.wheelAcc));
+      }
+    }, { passive: false });
     return s;
   }
 
@@ -495,18 +527,20 @@
       const r = st.rows.indexOf(row);
       goRow(st.rows[r + 1] || st.rows[0]);
     });
+    if (!st.viewRow) st.viewRow = row;
 
     // keep rows in a fixed order no matter which fetch finishes first
     const rank = ROW_ORDER.indexOf(key);
     const after = st.rows.findIndex((r) => ROW_ORDER.indexOf(r.key) > rank);
     if (after < 0) {
       st.rows.push(row);
-      st.rowsEl.append(block);
+      st.track.append(block);
     } else {
       st.rows.splice(after, 0, row);
-      st.rowsEl.insertBefore(block, st.rows[after + 1].block);
+      st.track.insertBefore(block, st.rows[after + 1].block);
     }
     updateHints();
+    goRow(st.viewRow, false); // a row inserted above the visible one shifts the track
     return row;
   }
 
@@ -519,9 +553,25 @@
     });
   }
 
-  function goRow(row) {
+  function goRow(row, animate = true) {
     if (!row) return;
-    st.rowsEl.scrollTo({ top: row.block.offsetTop, behavior: 'smooth' });
+    st.viewRow = row;
+    st.track.classList.toggle('cyt-instant', !animate);
+    st.track.style.transform = `translateY(${-row.block.offsetTop}px)`;
+  }
+
+  function stepRow(dir) {
+    const r = st.rows.indexOf(st.viewRow) + dir;
+    if (r >= 0 && r < st.rows.length) goRow(st.rows[r]);
+  }
+
+  // Scroll a row sideways just enough to show the card (no vertical scrolling).
+  function revealCard(row, card) {
+    const sc = row.scroller;
+    const pad = sc.clientWidth * 0.06;
+    if (card.offsetLeft < sc.scrollLeft + pad || card.offsetLeft + card.offsetWidth > sc.scrollLeft + sc.clientWidth - pad) {
+      sc.scrollTo({ left: card.offsetLeft - pad, behavior: 'smooth' });
+    }
   }
 
   function cardFor(row, item, i) {
@@ -580,7 +630,7 @@
     for (const c of st.rowsEl.querySelectorAll('.cyt-card.cyt-sel')) c.classList.remove('cyt-sel');
     const card = row.scroller.children[i];
     card?.classList.add('cyt-sel');
-    if (scroll && card) card.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    if (scroll && card) revealCard(row, card);
 
     st.title.textContent = item.title;
     st.chan.textContent = item.channel;
@@ -699,7 +749,7 @@
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       select(row, i + (e.key === 'ArrowRight' ? 1 : -1), true);
     } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      const target = st.rows[st.rows.indexOf(row) + (e.key === 'ArrowDown' ? 1 : -1)];
+      const target = st.rows[st.rows.indexOf(st.viewRow) + (e.key === 'ArrowDown' ? 1 : -1)];
       if (target) {
         goRow(target);
         select(target, target.sel, true);

@@ -23,13 +23,37 @@
   const previewCpns = new Set();
   let stageOn = false;
 
-  function blocked(input) {
+  // Diagnostics, off by default: localStorage['cyt:debug'] = '1' records the
+  // history-related requests this page makes into localStorage['cyt:log'].
+  const DEBUG = (() => { try { return localStorage.getItem('cyt:debug') === '1'; } catch { return false; } })();
+  function dlog(entry) {
+    if (!DEBUG) return;
+    try {
+      const log = JSON.parse(localStorage.getItem('cyt:log') || '[]');
+      log.push({ at: new Date().toISOString().slice(11, 23), ...entry });
+      localStorage.setItem('cyt:log', JSON.stringify(log.slice(-400)));
+    } catch {}
+  }
+  if (DEBUG) {
+    try {
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries()) {
+          if (/stats|ptracking|\/player\b|history|watchtime|log_event|feedback/.test(e.name)) {
+            dlog({ sent: e.name.slice(0, 260), via: e.initiatorType });
+          }
+        }
+      }).observe({ type: 'resource', buffered: true });
+    } catch {}
+  }
+
+  function blocked(input, via) {
     try {
       const s = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
       if (!STATS_RE.test(s)) return false;
-      if (stageOn) return true;
       const cpn = new URL(s, location.href).searchParams.get('cpn');
-      return !!cpn && previewCpns.has(cpn);
+      const block = stageOn || (!!cpn && previewCpns.has(cpn));
+      dlog({ [block ? 'BLOCKED' : 'allowed']: s.slice(0, 160), via, stageOn, cpn });
+      return block;
     } catch {
       return false;
     }
@@ -37,32 +61,36 @@
 
   const origFetch = window.fetch;
   window.fetch = function (input, init) {
-    if (blocked(input)) return Promise.resolve(new Response(null, { status: 204 }));
+    if (blocked(input, 'fetch')) return Promise.resolve(new Response(null, { status: 204 }));
     return origFetch.apply(this, arguments);
   };
   if (navigator.sendBeacon) {
     const origBeacon = navigator.sendBeacon.bind(navigator);
-    navigator.sendBeacon = (url, data) => (blocked(url) ? true : origBeacon(url, data));
+    navigator.sendBeacon = (url, data) => (blocked(url, 'beacon') ? true : origBeacon(url, data));
   }
   const origOpen = XMLHttpRequest.prototype.open;
-  const origSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.open = function (method, url) {
-    this.__cytBlocked = blocked(url);
+  // A blocked ping must still *complete*: a request that never finishes can be
+  // queued by YouTube and retried later, after the block is gone. So blocked XHRs
+  // go to YouTube's own empty /generate_204 endpoint instead.
+  XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+    if (blocked(url, 'xhr')) return origOpen.call(this, 'GET', '/generate_204', ...rest);
     return origOpen.apply(this, arguments);
   };
-  XMLHttpRequest.prototype.send = function () {
-    if (this.__cytBlocked) return undefined;
-    return origSend.apply(this, arguments);
-  };
+  const BLANK_GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
   const srcDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
   if (srcDesc?.set) {
     Object.defineProperty(HTMLImageElement.prototype, 'src', {
       ...srcDesc,
       set(v) {
-        if (!blocked(v)) srcDesc.set.call(this, v);
+        srcDesc.set.call(this, blocked(v, 'img') ? BLANK_GIF : v);
       },
     });
   }
+  const origSetAttribute = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function (name, value) {
+    if (this instanceof HTMLImageElement && name === 'src' && blocked(value, 'img-attr')) value = BLANK_GIF;
+    return origSetAttribute.call(this, name, value);
+  };
 
   // ---------- the preview player ----------
   const CONTEXTS = [
@@ -85,11 +113,11 @@
     if (cpn) previewCpns.add(cpn);
   }
 
-  // Previews sit behind dark shading; 720p looks the same there and costs far
-  // less bandwidth and battery than 1080p+.
+  // Pin previews to 1080p: sharp full-screen, without the bandwidth and battery
+  // cost of 1440p/4K.
   function capQuality(p) {
-    try { p.setPlaybackQualityRange?.('hd720', 'hd720'); } catch {}
-    try { p.setPlaybackQuality?.('hd720'); } catch {}
+    try { p.setPlaybackQualityRange?.('hd1080', 'hd1080'); } catch {}
+    try { p.setPlaybackQuality?.('hd1080'); } catch {}
   }
 
   function ensurePlayer() {
@@ -231,6 +259,7 @@
   document.addEventListener('cyt:cmd', (e) => {
     let cmd;
     try { cmd = JSON.parse(e.detail); } catch { return; }
+    if (cmd.type !== 'pause' && cmd.type !== 'resume') dlog({ cmd: cmd.type, id: cmd.id, on: cmd.on, cpn: player?.getVideoData?.()?.cpn });
     const p = player && player.isConnected ? player : null;
     switch (cmd.type) {
       case 'load':
