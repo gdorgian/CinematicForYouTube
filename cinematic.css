@@ -427,8 +427,13 @@ html.cyt-amb-on #masthead-container {
   pointer-events: none;
 }
 #cyt-amb canvas {
+  /* ambient.js sizes it and sets the blur (scaled to the video height) */
   position: absolute;
-  filter: blur(90px) saturate(1.3);
-  opacity: var(--cyt-amb-strength, 0.8);
+  opacity: var(--cyt-amb-strength, 1);
   transition: opacity 0.4s ease;
+}
+/* keep text readable where the glow is bright (their "content shadow", 15/30%) */
+html.cyt-amb-on ytd-watch-flexy #below,
+html.cyt-amb-on ytd-watch-flexy #secondary {
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.3), 0 0 6px rgba(0, 0, 0, 0.3);
 }

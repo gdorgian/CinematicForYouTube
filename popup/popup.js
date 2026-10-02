@@ -1,5 +1,8 @@
 // Keep in sync with DEFAULTS in content.js and ambient.js
-const DEFAULTS = { enabled: true, sound: false, hideShorts: true, ambient: true, ambientStrength: 0.8 };
+const DEFAULTS = {
+  enabled: true, sound: false, hideShorts: true,
+  ambient: true, ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
+};
 const inputs = [...document.querySelectorAll('[data-key]')];
 
 function render(s) {

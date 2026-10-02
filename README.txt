@@ -30,11 +30,18 @@ Home page
 
 Video page: ambient light
 - While a video plays, its colours glow out around the player and under the
-  translucent top bar (like an Ambilight TV), on a pure black page. Follows the
-  player in normal and theater mode; off in fullscreen.
-- Popup: "Ambient light on videos" on/off and "Glow strength".
-- Replaces YouTube's own (subtler) ambient mode. Light on the battery: the video
-  is sampled into a 64x36 canvas at up to 30 fps and the GPU does the blur.
+  translucent top bar, on a pure black page. Same technique as "Ambient light for
+  YouTube": the picture is drawn as ~9 layers, each bigger by 15.3% of the video
+  width, so the light on each side comes from that side's edge of the picture;
+  the outer part fades to black. Follows the player in normal and theater mode;
+  off in fullscreen.
+- Popup: Ambient light on/off, Glow spread (default 122), Glow blur (default 38),
+  Glow strength. Defaults are the values exported from your Ambient Light setup.
+- Replaces YouTube's own (subtler) ambient mode.
+- Light on the battery: one 128px downscale of the frame, ~9 tiny draws, at most
+  30 fps; the GPU does the blur.
+- Test bench: test/ambient.html (a fake watch page with a test-pattern video;
+  serve the repo root and open /test/ambient.html).
 
 Battery and data
 - Previews play at 1080p.
