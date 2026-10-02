@@ -233,7 +233,7 @@
   // the preview is only a "trailer" from somewhere in the middle, so a new video
   // starts at 0:00, and one you've partly watched resumes where *you* stopped
   // (YouTube's watch page does that by itself; previews never count as progress).
-  // Falls back to a normal page load.
+  // Falls back to a normal page load only if YouTube didn't pick the navigation up.
   function open(cmd) {
     const p = player && player.isConnected ? player : null;
     recordCpn(p);
@@ -247,15 +247,59 @@
       commandMetadata: { webCommandMetadata: { url, webPageType: 'WEB_PAGE_TYPE_WATCH', rootVe: 3832 } },
       watchEndpoint: { videoId: cmd.id },
     };
+    let started = false;
+    document.addEventListener('yt-navigate-start', () => { started = true; }, { once: true });
     try {
       document.querySelector('ytd-app')?.dispatchEvent(
         new CustomEvent('yt-navigate', { bubbles: true, composed: true, detail: { endpoint } })
       );
     } catch {}
+    // A slow navigation must not be cut short by a reload (the video would start twice).
     setTimeout(() => {
-      if (!location.pathname.startsWith('/watch')) location.href = url;
-    }, 1500);
+      if (!started && !location.pathname.startsWith('/watch')) location.href = url;
+    }, 1000);
   }
+
+  // ---------- resume where you left off ----------
+  // Every few seconds of playback on a watch page, remember the position per video
+  // (localStorage, last 300 videos). When a video opens near 0:00 although you had
+  // got further, jump there — unless the link asks for its own start time (&t=),
+  // YouTube already resumed, or you had (almost) finished it.
+  const RESUME_KEY = 'cyt:resume';
+  const loadResume = () => { try { return JSON.parse(localStorage.getItem(RESUME_KEY)) || {}; } catch { return {}; } };
+  let resumeFor = ''; // video id we already considered resuming
+
+  function resumeTick() {
+    if (location.pathname !== '/watch') return;
+    const mp = document.getElementById('movie_player');
+    const id = new URLSearchParams(location.search).get('v');
+    const data = mp?.getVideoData?.();
+    if (!id || data?.video_id !== id || data.isLive) return;
+    const now = mp.getCurrentTime?.() || 0;
+    const dur = mp.getDuration?.() || 0;
+    const state = mp.getPlayerState?.();
+    if (resumeFor !== id) {
+      if (state !== 1 && state !== 3) return; // wait until it is actually starting
+      resumeFor = id;
+      const saved = loadResume()[id];
+      const asked = new URLSearchParams(location.search).has('t');
+      if (!asked && saved && now < 5 && saved.t > 10 && (!dur || saved.t < dur - 30)) {
+        mp.seekTo(saved.t, true);
+        return;
+      }
+    }
+    if (state !== 1 || !dur) return;
+    const all = loadResume();
+    if (now > dur - 30) delete all[id]; // finished: start fresh next time
+    else if (now > 10) all[id] = { t: Math.floor(now), at: Date.now() };
+    const ids = Object.keys(all);
+    if (ids.length > 300) {
+      ids.sort((a, b) => all[a].at - all[b].at).slice(0, ids.length - 300).forEach((k) => delete all[k]);
+    }
+    try { localStorage.setItem(RESUME_KEY, JSON.stringify(all)); } catch {}
+  }
+  setInterval(resumeTick, 2000);
+  document.addEventListener('yt-navigate-finish', () => { resumeFor = ''; });
 
   document.addEventListener('cyt:cmd', (e) => {
     let cmd;

@@ -101,22 +101,14 @@
   if (isHome()) setPending(true);
 
   // ---------- settings ----------
-  let weAddedDark = false;
-  function enforceDark() {
-    if (S.enabled && !root.hasAttribute('dark')) {
-      root.setAttribute('dark', '');
-      weAddedDark = true;
-    } else if (!S.enabled && weAddedDark) {
-      root.removeAttribute('dark');
-      weAddedDark = false;
-    }
-  }
-  new MutationObserver(enforceDark).observe(root, { attributes: true, attributeFilter: ['dark'] });
-
+  // Never touch YouTube's theme (html[dark]): when it doesn't match the user's own
+  // YouTube appearance setting, YouTube turns every in-app navigation into a full
+  // page reload ("themeRefresh"), so videos load slowly and start several times.
+  // The Home stage draws its own dark look; the ambient light needs YouTube's dark
+  // theme (ambient.js checks for it).
   function applyClasses() {
     root.classList.toggle('cyt-on', S.enabled);
     root.classList.toggle('cyt-no-shorts', S.enabled && S.hideShorts);
-    enforceDark();
   }
 
   chrome.storage.sync.get(DEFAULTS, (v) => {

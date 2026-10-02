@@ -2,28 +2,29 @@
 //
 // In theater mode:
 //  - the video gets most of the window (theaterSize% of its height, popup slider,
-//    default 88) and the page starts at the very top; the top bar hides until the
+//    default 85) and the page starts at the very top; the top bar hides until the
 //    mouse nears the top edge (content.js handles the reveal for .cyt-immersive)
 //  - the title appears over the video together with YouTube's own controls
 //    (it follows the player's ytp-autohide class); YouTube's title line is hidden
-//  - one bar under the video: channel + Subscribe and the like/share/... buttons
-//    (YouTube's own #top-row) with the related-video chips (All / From … /
-//    Watched) on the right
-//  - the recommendations sidebar becomes a row of cards like Home's (no heading),
-//    and the description and comments below take the full width
+//  - the band under the video fills exactly the rest of the screen: channel +
+//    Subscribe on the left, YouTube's like/share/... buttons on the right and a
+//    "More videos" hint, so nothing else shows until you scroll
+//  - below the fold, the recommendations sidebar becomes a row of cards like
+//    Home's, with its chips (All / From … / Watched) above it; the description
+//    and comments below take the full width
 // The sidebar stays when live chat is open (the chat lives there).
 (() => {
   'use strict';
 
-  const DEFAULTS = { enabled: true, immersiveTheater: true, theaterSize: 88 };
+  const DEFAULTS = { enabled: true, immersiveTheater: true, theaterSize: 85 };
   let S = { ...DEFAULTS };
   const root = document.documentElement;
 
   let watchedFlexy = null;
   let overlay = null; // {el, key}
-  let chipsEl = null;
   let chipsSig = '';
-  let related = null; // {el, scroller, sig, updateArrows}
+  let related = null; // {el, chips, scroller, sig, updateArrows}
+  let moreEl = null;
 
   const flexy = () => document.querySelector('ytd-watch-flexy');
   const txt = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -58,7 +59,7 @@
     }
   }
 
-  // ---------- related chips, moved into the bar next to the buttons ----------
+  // ---------- related chips, shown above the recommendation cards ----------
   function sourceChips() {
     const rel = document.querySelector('#related');
     if (!rel) return [];
@@ -76,19 +77,12 @@
   }
 
   function ensureChips() {
-    const row = document.querySelector('ytd-watch-metadata #top-row');
-    if (!row) return;
-    if (!chipsEl || !row.contains(chipsEl)) {
-      chipsEl = mk('div');
-      chipsEl.id = 'cyt-bar-chips';
-      row.append(chipsEl);
-      chipsSig = '';
-    }
+    if (!related) return;
     const chips = sourceChips();
     const sig = chips.map((c) => c.label + (c.selected ? '*' : '')).join('|');
     if (sig === chipsSig) return;
     chipsSig = sig;
-    chipsEl.replaceChildren(...chips.map((c) => {
+    related.chips.replaceChildren(...chips.map((c) => {
       const b = mk('button', c.selected ? 'cyt-chip cyt-on' : 'cyt-chip', c.label);
       b.addEventListener('click', () => c.target.click()); // YouTube reloads #related
       return b;
@@ -159,10 +153,12 @@
         right.classList.toggle('cyt-hidden', scroller.scrollLeft + scroller.clientWidth > scroller.scrollWidth - 10);
       };
       scroller.addEventListener('scroll', updateArrows, { passive: true });
-      const el = mk('section', '', mk('div', 'cyt-row-wrap', left, scroller, right));
+      const chips = mk('div', 'cyt-related-chips');
+      const el = mk('section', '', chips, mk('div', 'cyt-row-wrap', left, scroller, right));
       el.id = 'cyt-related';
       topRow.after(el);
-      related = { el, scroller, sig: '', updateArrows };
+      related = { el, chips, scroller, sig: '', updateArrows };
+      chipsSig = '';
     }
     const items = relatedItems();
     const sig = items.map((i) => i.id).join(',');
@@ -171,6 +167,20 @@
     related.scroller.replaceChildren(...items.map(card));
     related.scroller.scrollLeft = 0;
     related.updateArrows();
+  }
+
+  // ---------- "More videos" hint at the bottom of the band ----------
+  function ensureMore() {
+    const row = document.querySelector('ytd-watch-metadata #top-row');
+    if (!row || (moreEl && row.contains(moreEl))) return;
+    moreEl?.remove();
+    moreEl = mk('button', '', 'More videos', mk('span', 'cyt-more-chev', '⌄'));
+    moreEl.id = 'cyt-more';
+    moreEl.addEventListener('click', () => {
+      const top = related?.el.getBoundingClientRect().top;
+      if (top !== undefined) window.scrollBy({ top: top - 16, behavior: 'smooth' });
+    });
+    row.append(moreEl);
   }
 
   // ---------- the bar sits right under the video ----------
@@ -213,8 +223,9 @@
     }
     if (on) {
       ensureOverlay();
-      ensureChips();
       ensureRelated();
+      ensureChips();
+      ensureMore();
       alignBar();
     }
   }

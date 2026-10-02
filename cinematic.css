@@ -5,16 +5,6 @@ html.cyt-on[dark] {
   --yt-spec-base-background: #0f0f0f;
   --yt-spec-general-background-a: #0f0f0f;
 }
-/* When YouTube itself is set to the light theme, forcing [dark] leaves a few
-   components half-switched: light background AND light text (blank Subscribe
-   button, blank selected chip). Give those their proper dark-theme colours. */
-html.cyt-on[dark] .ytSpecButtonShapeNextFilled.ytSpecButtonShapeNextMono,
-html.cyt-on[dark] .yt-spec-button-shape-next--filled.yt-spec-button-shape-next--mono,
-html.cyt-on[dark] .ytChipShapeActive,
-html.cyt-on[dark] yt-chip-cloud-chip-renderer[selected] #chip-container {
-  background-color: #f1f1f1 !important;
-  color: #0f0f0f !important;
-}
 
 /* ---------- Home stage on: freeze YouTube's page underneath ---------- */
 html.cyt-stage-on,
@@ -449,13 +439,13 @@ html.cyt-amb-on ytd-watch-flexy #secondary {
 }
 
 /* ---------- immersive theater mode (watch.js sets .cyt-immersive) ---------- */
-/* the video gets most of the window (popup slider, default 88%); the bar with
-   channel, buttons and chips sits right below it */
+/* the video gets most of the window (popup slider, default 85%); the band with
+   channel and buttons fills the rest of the screen */
 html.cyt-immersive ytd-page-manager {
   margin-top: 0 !important;
 }
 html.cyt-immersive ytd-watch-flexy[theater]:not([fullscreen]) #full-bleed-container {
-  height: var(--cyt-theater-h, 88vh) !important;
+  height: var(--cyt-theater-h, 85vh) !important;
   max-height: none !important;
   min-height: 0 !important;
 }
@@ -506,16 +496,56 @@ html.cyt-immersive #movie_player:not(.ytp-autohide) #cyt-watch-info {
   transform: none;
 }
 
-/* the title line goes (it's on the video); one bar: channel + buttons + chips */
+/* the title line goes (it's on the video). The band under the video fills exactly
+   the rest of the screen (100vh - video - the 6px gap watch.js keeps), so the
+   recommendations start below the fold. Channel left, buttons right, both centred
+   vertically; a "More videos" hint at the bottom. */
 html.cyt-immersive ytd-watch-metadata #title-row {
   display: none !important;
 }
 html.cyt-immersive ytd-watch-metadata #top-row {
+  position: relative;
   display: flex !important;
   align-items: center;
   flex-wrap: nowrap;
   gap: 12px;
+  box-sizing: border-box;
+  min-height: calc(100vh - var(--cyt-theater-h, 85vh) - 6px);
   margin-top: 0 !important;
+  padding: 0 4px 22px; /* room for the hint */
+}
+#cyt-more {
+  display: none;
+}
+html.cyt-immersive #cyt-more {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border: 0;
+  background: none;
+  color: #9a9a9a;
+  font: 500 12px Roboto, Arial, sans-serif;
+  letter-spacing: 0.04em;
+  transform: translateX(-50%);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+html.cyt-immersive #cyt-more:hover {
+  color: #fff;
+}
+.cyt-more-chev {
+  font-size: 15px;
+  line-height: 1;
+  animation: cyt-nudge 2.4s ease-in-out infinite;
+}
+@keyframes cyt-nudge {
+  0%, 70%, 100% { transform: translateY(0); }
+  80% { transform: translateY(3px); }
+  90% { transform: translateY(0); }
 }
 /* the bar sits right under the video: drop YouTube's spacing above it; watch.js
    measures whatever gap is left and pulls the content up (--cyt-bar-pull) */
@@ -534,17 +564,16 @@ html.cyt-immersive ytd-watch-flexy #primary-inner {
 html.cyt-immersive ytd-watch-metadata #top-row #actions {
   margin-left: auto;
 }
-#cyt-bar-chips,
 #cyt-related {
   display: none;
 }
-html.cyt-immersive #cyt-bar-chips {
+.cyt-related-chips {
   display: flex;
-  flex: none;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-left: 8px;
+  margin: 0 2px 4px;
 }
-#cyt-bar-chips .cyt-chip {
+.cyt-related-chips .cyt-chip {
   flex: none;
   height: 32px;
   padding: 0 12px;
@@ -555,8 +584,8 @@ html.cyt-immersive #cyt-bar-chips {
   font: 500 14px Roboto, Arial, sans-serif;
   cursor: pointer;
 }
-#cyt-bar-chips .cyt-chip:hover { background: rgba(255, 255, 255, 0.2); }
-#cyt-bar-chips .cyt-chip.cyt-on { background: #f1f1f1; color: #0f0f0f; }
+.cyt-related-chips .cyt-chip:hover { background: rgba(255, 255, 255, 0.2); }
+.cyt-related-chips .cyt-chip.cyt-on { background: #f1f1f1; color: #0f0f0f; }
 
 /* no sidebar: recommendations become the "Up next" row, the rest goes full width
    (except with live chat open: the chat lives in the sidebar) */
@@ -572,7 +601,7 @@ html.cyt-immersive ytd-watch-flexy[live-chat-present-and-expanded] #cyt-related 
 html.cyt-immersive #cyt-related {
   display: block;
   --cyt-card-w: clamp(200px, 15.5vw, 310px);
-  margin: 10px 0 6px;
+  margin: 18px 0 10px;
 }
 #cyt-related .cyt-row {
   padding: 6px 2px;

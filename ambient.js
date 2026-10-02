@@ -35,8 +35,9 @@
 
   const flexy = () => document.querySelector('ytd-watch-flexy');
   const inTheater = () => !!flexy()?.hasAttribute('theater');
+  // needs YouTube's own dark theme: the glow shows through a black, transparent page
   const wanted = () => S.enabled && S.ambient && location.pathname === '/watch'
-    && (!S.ambientTheaterOnly || inTheater());
+    && root.hasAttribute('dark') && (!S.ambientTheaterOnly || inTheater());
   const mainVideo = () => document.querySelector('#movie_player video.html5-main-video, #movie_player video');
 
   // ---------- drawing ----------

@@ -1,4 +1,4 @@
-Cinematic — Netflix-style YouTube (personal rebuild) — v3.6
+Cinematic — Netflix-style YouTube (personal rebuild) — v3.7
 ===========================================================
 
 Install / update in Brave
@@ -29,17 +29,29 @@ Home page
 - Keyboard: ← → video, ↑ ↓ row, Enter play, M sound.
 
 Video page: cinematic theater mode
-- In theater mode the video gets most of the window (88% of its height by
+- In theater mode the video gets most of the window (85% of its height by
   default; popup slider "Theater video size", 70-100%).
 - The top bar is hidden; move the mouse to the top edge to bring it back.
 - The title appears over the video whenever YouTube's controls show (mouse move,
   or paused); YouTube's own title line is hidden.
-- One bar under the video: channel + Subscribe, like/share/save/... and the
-  related chips (All / From <channel> / Watched) on the right.
-- The recommendations sidebar becomes a row of cards like Home's, right under
-  the bar (hover a card for its title, channel, views and date); description and
-  comments below take the full width. With live chat open the sidebar stays.
+- The band under the video fills exactly the rest of the screen: channel +
+  Subscribe on the left, like/share/save/... on the right, "More videos" hint at
+  the bottom. Nothing else shows until you scroll.
+- Below the fold: the recommendations as a row of cards like Home's, with their
+  chips (All / From <channel> / Watched) above; description and comments take
+  the full width. With live chat open the sidebar stays.
 - Popup: "Full-screen theater mode" on/off.
+
+Resume where you left off
+- Cinematic remembers your position in every video (last 300) and jumps back
+  there when you reopen or reload it, unless the link has its own start time,
+  YouTube already resumed, or you had nearly finished.
+
+YouTube theme
+- Cinematic never changes YouTube's theme: forcing dark while YouTube is set to
+  light makes YouTube reload the page on every click ("themeRefresh"), which made
+  videos slow to open and start several times. Set YouTube to Dark yourself
+  (profile picture > Appearance > Dark theme); the ambient light needs it.
 
 Video page: ambient light
 - While a video plays, its colours glow out around the player and under the

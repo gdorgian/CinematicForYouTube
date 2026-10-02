@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Cinematic — Netflix-style YouTube",
   "short_name": "Cinematic",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "description": "Personal rebuild: Netflix-style YouTube Home (autoplaying hero + rows) and ambient light around videos.",
   "icons": {
     "16": "icons/icon16.png",
