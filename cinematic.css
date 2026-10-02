@@ -392,3 +392,41 @@ html.cyt-on ytd-ad-slot-renderer,
 html.cyt-on ytd-rich-item-renderer:has(ytd-ad-slot-renderer) {
   display: none !important;
 }
+
+/* ---------- ambient light on the watch page (ambient.js) ---------- */
+/* black page under transparent YouTube layers, so the glow behind shows through */
+html.cyt-amb-on {
+  background: #000 !important;
+}
+html.cyt-amb-on ytd-app,
+html.cyt-amb-on #player-full-bleed-container {
+  background: transparent !important;
+}
+/* YouTube's own (much subtler) ambient mode would double up with ours */
+html.cyt-amb-on #cinematics-container,
+html.cyt-amb-on #cinematics-full-bleed-container {
+  display: none !important;
+}
+/* translucent header, so the glow continues underneath it */
+html.cyt-amb-on #masthead-container ytd-masthead,
+html.cyt-amb-on #masthead-container ytd-masthead #background {
+  background: rgba(0, 0, 0, 0.55) !important;
+}
+html.cyt-amb-on #masthead-container {
+  backdrop-filter: blur(24px) saturate(1.4);
+}
+#cyt-amb {
+  /* a full-width band in document coordinates around the video (ambient.js sets
+     the geometry); z-index -1 paints it under every page layer, overflow clips it
+     at the window edges */
+  position: absolute;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+#cyt-amb canvas {
+  position: absolute;
+  filter: blur(72px) saturate(1.3);
+  opacity: var(--cyt-amb-strength, 0.8);
+  transition: opacity 0.4s ease;
+}

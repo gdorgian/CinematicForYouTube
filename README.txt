@@ -1,5 +1,5 @@
-Cinematic — Netflix-style YouTube (personal rebuild) — v3
-=========================================================
+Cinematic — Netflix-style YouTube (personal rebuild) — v3.3
+===========================================================
 
 Install / update in Brave
 1. brave://extensions → Developer mode on
@@ -27,6 +27,14 @@ Home page
 - Top bar: hidden. Move the mouse to the top edge to bring back the logo,
   search, Create, notifications and your profile.
 - Keyboard: ← → video, ↑ ↓ row, Enter play, M sound.
+
+Video page: ambient light
+- While a video plays, its colours glow out around the player and under the
+  translucent top bar (like an Ambilight TV), on a pure black page. Follows the
+  player in normal and theater mode; off in fullscreen.
+- Popup: "Ambient light on videos" on/off and "Glow strength".
+- Replaces YouTube's own (subtler) ambient mode. Light on the battery: the video
+  is sampled into a 64x36 canvas at up to 30 fps and the GPU does the blur.
 
 Battery and data
 - Previews play at 1080p.
