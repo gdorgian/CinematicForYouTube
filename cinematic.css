@@ -95,6 +95,28 @@ html.cyt-stage-on ytd-video-preview {
   font-family: inherit;
 }
 
+/* leaving Home: content fades, the backdrop dims; then the whole stage fades out
+   once the next page is ready (content.js leave/teardown) */
+#cyt-stage.cyt-leaving {
+  pointer-events: none;
+}
+#cyt-stage.cyt-leaving .cyt-front,
+#cyt-stage.cyt-leaving .cyt-arrow {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+#cyt-stage.cyt-leaving .cyt-video {
+  opacity: 0 !important;
+}
+#cyt-stage.cyt-leaving .cyt-bg {
+  opacity: 0.4;
+  transition: opacity 0.35s ease;
+}
+#cyt-stage.cyt-gone {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
 /* ---------- hero media ---------- */
 .cyt-media {
   position: absolute;

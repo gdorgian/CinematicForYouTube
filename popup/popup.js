@@ -1,7 +1,7 @@
 // Keep in sync with DEFAULTS in content.js, ambient.js and watch.js
 const DEFAULTS = {
   enabled: true, netflixHome: true, sound: false, hideShorts: true,
-  immersiveTheater: true, theaterSize: 85,
+  immersiveTheater: true, autoTheater: true, theaterSize: 85,
   ambient: true, ambientTheaterOnly: false, ambientBars: true,
   ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,
 };

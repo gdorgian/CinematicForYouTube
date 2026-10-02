@@ -17,7 +17,7 @@
 (() => {
   'use strict';
 
-  const DEFAULTS = { enabled: true, immersiveTheater: true, theaterSize: 85 };
+  const DEFAULTS = { enabled: true, immersiveTheater: true, autoTheater: true, theaterSize: 85 };
   let S = { ...DEFAULTS };
   const root = document.documentElement;
 
@@ -37,10 +37,48 @@
     return el;
   }
 
+  // YouTube remembers theater mode in a cookie, so the layout is known before the
+  // page renders: applying it right away avoids a visible jump (and a player resize)
+  // once YouTube's own page appears.
+  const wideCookie = () => /(?:^|;\s*)wide=1(?:;|$)/.test(document.cookie);
+  const videoId = () => new URLSearchParams(location.search).get('v') || '';
+  let autoTheaterFor = ''; // video we already switched into theater for
+  let theaterWaitFor = '';
+  let theaterWaitSince = 0;
+
   function immersiveWanted() {
+    if (!(S.enabled && S.immersiveTheater && location.pathname === '/watch') || document.fullscreenElement) return false;
     const f = flexy();
-    return S.enabled && S.immersiveTheater && location.pathname === '/watch'
-      && !!f && f.hasAttribute('theater') && !f.hasAttribute('fullscreen') && !document.fullscreenElement;
+    if (!f) return wideCookie() || S.autoTheater; // page still booting
+    if (f.hasAttribute('fullscreen')) return false;
+    // about to be switched to theater by ensureTheater(): keep the layout, no flicker
+    return f.hasAttribute('theater') || (S.autoTheater && autoTheaterFor !== videoId());
+  }
+
+  // "Open videos in theater mode": switch YouTube to theater once per video, so
+  // leaving theater on a video sticks until the next one.
+  function ensureTheater() {
+    const f = flexy();
+    const id = videoId();
+    if (!S.enabled || !S.immersiveTheater || !S.autoTheater || !f || !id || autoTheaterFor === id) return;
+    if (f.hasAttribute('theater') || f.hasAttribute('fullscreen')) {
+      autoTheaterFor = id;
+      return;
+    }
+    const button = document.querySelector('#movie_player .ytp-size-button');
+    if (!button) {
+      // player controls not built yet: try again on the next check, but give up after
+      // 3 s (some pages never get a theater button) so the layout isn't left waiting
+      if (theaterWaitFor !== id) {
+        theaterWaitFor = id;
+        theaterWaitSince = performance.now();
+      } else if (performance.now() - theaterWaitSince > 3000) {
+        autoTheaterFor = id;
+      }
+      return;
+    }
+    autoTheaterFor = id;
+    button.click();
   }
 
   // ---------- title over the video ----------
@@ -240,6 +278,7 @@
       watchedFlexy = f;
       new MutationObserver(sync).observe(f, { attributes: true, attributeFilter: ['theater', 'fullscreen'] });
     }
+    if (location.pathname === '/watch') ensureTheater();
     const on = immersiveWanted();
     if (on !== root.classList.contains('cyt-immersive')) {
       root.classList.toggle('cyt-immersive', on);
@@ -256,10 +295,18 @@
     }
   }
 
+  // While YouTube builds a page, check often (it fills in the player, title and
+  // buttons over the first second or so); afterwards the 1s tick is enough.
+  let kickTimers = [];
+  function kick() {
+    kickTimers.forEach(clearTimeout);
+    kickTimers = [0, 60, 150, 300, 500, 800, 1300].map((ms) => setTimeout(sync, ms));
+  }
+
   chrome.storage.sync.get(DEFAULTS, (v) => {
     S = { ...DEFAULTS, ...v };
     applySize();
-    sync();
+    kick();
   });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
@@ -271,7 +318,8 @@
     sync();
   });
 
-  document.addEventListener('yt-navigate-finish', sync);
+  document.addEventListener('yt-navigate-finish', kick);
+  document.addEventListener('DOMContentLoaded', kick);
   window.addEventListener('resize', () => {
     if (root.classList.contains('cyt-immersive')) setTimeout(fitBand, 100);
   });

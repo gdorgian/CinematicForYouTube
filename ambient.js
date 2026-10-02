@@ -300,9 +300,17 @@
     else place();
   }
 
+  // right after a page/video change check often, so the glow shows up as soon as
+  // the video does; afterwards the 1s tick is enough
+  let kickTimers = [];
+  function kick() {
+    kickTimers.forEach(clearTimeout);
+    kickTimers = [0, 100, 250, 500, 900].map((ms) => setTimeout(sync, ms));
+  }
+
   chrome.storage.sync.get(DEFAULTS, (v) => {
     S = { ...DEFAULTS, ...v };
-    sync();
+    kick();
   });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
@@ -312,7 +320,8 @@
     sync();
   });
 
-  document.addEventListener('yt-navigate-finish', sync);
+  document.addEventListener('yt-navigate-finish', kick);
+  document.addEventListener('DOMContentLoaded', kick);
   document.addEventListener('fullscreenchange', () => setTimeout(place, 50));
   window.addEventListener('resize', place);
   // Layout above the player can shift (theater mode, banners, sidebars loading in),

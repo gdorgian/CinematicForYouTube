@@ -13,8 +13,10 @@ A browser extension (Chrome, Brave, Edge, any Chromium browser) that turns YouTu
 - Scroll up/down (or ↑ ↓) to switch rows, swipe sideways to scroll a row, ← → to pick a video, Enter to play, M for sound
 - Top bar hidden until you move the mouse to the top edge
 - A different featured video on every visit
+- Smooth hand-off when you press Play: the screen dims like a cinema and crossfades into the video page
 
 **Theater mode (new video layout)**
+- Videos open in theater mode automatically (can be turned off), and the layout is in place from the first frame, with no jumping while the page loads
 - The video fills most of the window (size adjustable)
 - Title appears over the video when you move the mouse
 - A dark glass panel under the video with the channel, views and date, and the like / share / save buttons, scaled to fit
@@ -60,7 +62,7 @@ Click the extension icon:
 
 - **Enable Cinematic** — everything on/off
 - **Netflix mode** — the Home screen (+ previews with sound)
-- **Theater mode** — the new video layout (+ video size)
+- **Theater mode** — the new video layout (+ open videos in theater mode, video size)
 - **Ambient light** — glow around videos (+ only in theater mode, remove black bars, spread, blur, strength)
 - **Hide Shorts everywhere**
 

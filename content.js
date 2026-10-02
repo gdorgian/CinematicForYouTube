@@ -789,19 +789,52 @@
     }));
   }
 
-  function teardown() {
-    if (!st) return;
+  // Leaving Home (e.g. Play): stop the preview and dim the stage like a cinema going
+  // dark, but keep it up until the next page is ready, then fade it away (teardown),
+  // instead of flashing an empty page while YouTube loads.
+  function leave() {
+    if (!st || st.leaving) return;
+    st.leaving = true;
     send('stop');
     send('destroy');
     send('stage', { on: false });
     clearTimeout(st.hoverTimer);
-    st.el.remove();
-    st = null;
-    root.classList.remove('cyt-stage-on', 'cyt-topbar');
+    st.el.classList.remove('cyt-playing');
+    st.el.classList.add('cyt-leaving');
+    const s = st;
+    s.leaveTimer = setTimeout(() => { // navigation stalled or was cancelled
+      navigating = false;
+      if (st === s) teardown();
+      schedule();
+    }, 4000);
   }
 
+  function teardown() {
+    if (!st) return;
+    const s = st;
+    st = null;
+    if (!s.leaving) {
+      send('stop');
+      send('destroy');
+      send('stage', { on: false });
+    }
+    clearTimeout(s.hoverTimer);
+    clearTimeout(s.leaveTimer);
+    root.classList.remove('cyt-stage-on', 'cyt-topbar');
+    if (s.leaving) {
+      s.el.classList.add('cyt-gone');
+      setTimeout(() => s.el.remove(), 450);
+    } else {
+      s.el.remove();
+    }
+  }
+
+  let navigating = false; // between yt-navigate-start and -finish the URL is still the old one
+
   function sync() {
+    if (navigating) return;
     const browse = homeBrowse();
+    if (st?.leaving && isHome()) teardown(); // came back to Home: start a fresh stage
     if (!(S.enabled && S.netflixHome && isHome() && browse && !browse.hasAttribute('hidden'))) {
       teardown();
       if (!isHome() || !S.enabled || !S.netflixHome) setPending(false);
@@ -834,8 +867,12 @@
     }, 300);
   }
 
-  document.addEventListener('yt-navigate-start', teardown);
+  document.addEventListener('yt-navigate-start', () => {
+    navigating = true;
+    leave();
+  });
   document.addEventListener('yt-navigate-finish', () => {
+    navigating = false;
     if (isHome() && !st) setPending(true);
     schedule();
   });
@@ -851,7 +888,7 @@
   else document.addEventListener('DOMContentLoaded', observe, { once: true });
 
   document.addEventListener('keydown', (e) => {
-    if (!st) return;
+    if (!st || st.leaving) return;
     const t = e.target;
     if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
     const { row, i } = st.cur;
