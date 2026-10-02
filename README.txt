@@ -34,7 +34,8 @@ Video page: full-screen theater mode
   below; scroll down for buttons and recommendations.
 - The top bar is hidden; move the mouse to the top edge to bring it back.
 - Channel (with avatar) and title appear over the video, lower-left, whenever
-  YouTube's own controls show (mouse move, or paused).
+  YouTube's own controls show (mouse move, or paused), but only while YouTube's
+  own title row is off screen (e.g. at a 95-100% size), so it's never shown twice.
 - Popup: "Full-screen theater mode" on/off.
 
 Video page: ambient light

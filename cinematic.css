@@ -5,6 +5,16 @@ html.cyt-on[dark] {
   --yt-spec-base-background: #0f0f0f;
   --yt-spec-general-background-a: #0f0f0f;
 }
+/* When YouTube itself is set to the light theme, forcing [dark] leaves a few
+   components half-switched: light background AND light text (blank Subscribe
+   button, blank selected chip). Give those their proper dark-theme colours. */
+html.cyt-on[dark] .ytSpecButtonShapeNextFilled.ytSpecButtonShapeNextMono,
+html.cyt-on[dark] .yt-spec-button-shape-next--filled.yt-spec-button-shape-next--mono,
+html.cyt-on[dark] .ytChipShapeActive,
+html.cyt-on[dark] yt-chip-cloud-chip-renderer[selected] #chip-container {
+  background-color: #f1f1f1 !important;
+  color: #0f0f0f !important;
+}
 
 /* ---------- Home stage on: freeze YouTube's page underneath ---------- */
 html.cyt-stage-on,
@@ -468,7 +478,8 @@ html.cyt-immersive #frosted-glass {
   visibility: hidden !important;
 }
 
-/* channel + title over the video, shown together with YouTube's own controls */
+/* channel + title over the video: shown together with YouTube's own controls, and
+   only while YouTube's own title row is off screen (watch.js: .cyt-title-onscreen) */
 #cyt-watch-info {
   display: none;
   position: absolute;
@@ -487,7 +498,7 @@ html.cyt-immersive #frosted-glass {
 html.cyt-immersive #cyt-watch-info {
   display: block;
 }
-html.cyt-immersive #movie_player:not(.ytp-autohide) #cyt-watch-info {
+html.cyt-immersive:not(.cyt-title-onscreen) #movie_player:not(.ytp-autohide) #cyt-watch-info {
   opacity: 1;
   transform: none;
 }
@@ -495,18 +506,18 @@ html.cyt-immersive #movie_player:not(.ytp-autohide) #cyt-watch-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
-  font-size: 17px;
+  margin-bottom: 8px;
+  font-size: 15px;
   font-weight: 600;
 }
 .cyt-wi-channel img {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   object-fit: cover;
 }
 .cyt-wi-title {
-  font-size: clamp(26px, 2.6vw, 46px);
+  font-size: clamp(22px, 2vw, 36px);
   font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.01em;

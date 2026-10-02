@@ -6,7 +6,8 @@
 // The top bar hides until the mouse nears the top edge (content.js handles the
 // reveal for .cyt-immersive, same as Home),
 // and the channel + title appear over the video together with YouTube's own
-// controls (they follow the player's ytp-autohide class).
+// controls (they follow the player's ytp-autohide class) whenever YouTube's own
+// title row is not on screen.
 (() => {
   'use strict';
 
@@ -66,6 +67,25 @@
     if (data.avatar) info.avatar.src = data.avatar;
   }
 
+  // The overlay would only repeat YouTube's own title when that is on screen (it
+  // peeks out below the video at the default size), so track whether it is.
+  function checkTitle() {
+    const h1 = document.querySelector('ytd-watch-metadata h1');
+    const r = h1?.getBoundingClientRect();
+    const onscreen = !!r && r.height > 0 && r.bottom > 0 && r.top + r.height / 2 < window.innerHeight;
+    root.classList.toggle('cyt-title-onscreen', onscreen);
+  }
+
+  let scrollQueued = false;
+  window.addEventListener('scroll', () => {
+    if (scrollQueued || !root.classList.contains('cyt-immersive')) return;
+    scrollQueued = true;
+    requestAnimationFrame(() => {
+      scrollQueued = false;
+      checkTitle();
+    });
+  }, { passive: true });
+
   // The player only re-fits the picture to its new box on a window resize.
   const refit = () => requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
 
@@ -84,8 +104,12 @@
     if (on !== root.classList.contains('cyt-immersive')) {
       root.classList.toggle('cyt-immersive', on);
       refit();
+      setTimeout(checkTitle, 300); // after the player has re-fitted
     }
-    if (on) ensureInfo();
+    if (on) {
+      ensureInfo();
+      checkTitle();
+    }
   }
 
   chrome.storage.sync.get(DEFAULTS, (v) => {
@@ -98,7 +122,10 @@
     for (const [k, { newValue }] of Object.entries(changes)) S[k] = newValue ?? DEFAULTS[k];
     if (changes.theaterSize) {
       applySize();
-      if (root.classList.contains('cyt-immersive')) refit();
+      if (root.classList.contains('cyt-immersive')) {
+        refit();
+        setTimeout(checkTitle, 300);
+      }
     }
     sync();
   });
