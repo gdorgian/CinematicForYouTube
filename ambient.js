@@ -14,8 +14,7 @@
 (() => {
   'use strict';
 
-  // Defaults = the user's own "Ambient light for YouTube" settings (spread 122.1,
-  // blur 38.2, edge 15.3), exported 2026-10-02.
+  // Defaults: a strong, room-filling glow (spread 122, blur 38, edge 15.3).
   const DEFAULTS = {
     enabled: true, ambient: true, ambientTheaterOnly: false,
     ambientStrength: 1, ambientSpread: 122, ambientBlur: 38,

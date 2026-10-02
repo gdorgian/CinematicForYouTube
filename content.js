@@ -687,6 +687,19 @@
     return card;
   }
 
+  // Feature a different video on each visit: YouTube's feed often keeps the same
+  // video first (and reuses the Home page when you come back to it), so pick among
+  // the first few, skipping the ones featured recently.
+  const FEATURED_KEY = 'cyt:featured';
+  function pickFeatured(items) {
+    let recent = [];
+    try { recent = JSON.parse(localStorage.getItem(FEATURED_KEY)) || []; } catch {}
+    const pool = items.slice(0, 10).map((it, i) => ({ it, i })).filter(({ it }) => !recent.includes(it.id));
+    const pick = pool.length ? pool[Math.floor(Math.random() * Math.min(pool.length, 6))] : { it: items[0], i: 0 };
+    try { localStorage.setItem(FEATURED_KEY, JSON.stringify([pick.it.id, ...recent].slice(0, 8))); } catch {}
+    return pick.i;
+  }
+
   function setRowItems(row, items) {
     const appendOnly = row.items.length && items.length > row.items.length
       && row.items.every((it, k) => items[k].id === it.id);
@@ -701,7 +714,12 @@
       row.sel = 0;
       if (st.cur.row === row || !st.cur.row) {
         st.cur = { row: null, i: -1 };
-        select(row, 0, false);
+        if (row.key === 'home' && !st.featured) {
+          st.featured = true;
+          select(row, pickFeatured(items), true);
+        } else {
+          select(row, 0, false);
+        }
       }
     }
     row.updateArrows();
