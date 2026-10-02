@@ -1,4 +1,4 @@
-Cinematic — Netflix-style YouTube (personal rebuild) — v3.3
+Cinematic — Netflix-style YouTube (personal rebuild) — v3.5
 ===========================================================
 
 Install / update in Brave
