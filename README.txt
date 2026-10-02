@@ -20,8 +20,10 @@ Home page
     New from Subscriptions
     Watch Later
   Rows that come back empty are left out.
-- Hover a card to make it the hero. Play (or Enter, or clicking a card) opens the
-  video at the second the preview had reached.
+- Hover a card to make it the hero. Its preview is a "trailer": it starts ~12% in
+  (from the start for videos under 90 s; where you stopped for Continue Watching).
+- Play (or Enter, or clicking a card) opens the video from the beginning, or
+  where you left off if you've partly watched it. The preview never counts.
 - Top bar: hidden. Move the mouse to the top edge to bring back the logo,
   search, Create, notifications and your profile.
 - Keyboard: ← → video, ↑ ↓ row, Enter play, M sound.

@@ -668,10 +668,10 @@
     send('load', { id: item.id, start: startSeconds(item), muted: st.muted, paused: !st.wantPlay });
   }
 
-  // Open the video on YouTube's watch page, continuing from wherever the preview got to.
+  // Open the video on YouTube's watch page: from the start, or where you left off.
   function go(item) {
     if (!item) return;
-    send('open', { id: item.id, live: item.live });
+    send('open', { id: item.id });
   }
 
   // Ask YouTube for more Home videos: briefly scroll its hidden feed to the bottom so

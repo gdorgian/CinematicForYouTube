@@ -8,7 +8,7 @@
 // carrying JSON strings:
 //   content.js -> here : document 'cyt:cmd'
 //       load {id, start, muted, paused} | mute | unmute | pause | resume | stop |
-//       destroy | open {id, live} | stage {on}
+//       destroy | open {id} | stage {on}
 //   here -> content.js : document 'cyt:player' {type: playing|error|unavailable, id}
 (() => {
   'use strict';
@@ -229,25 +229,23 @@
     }, 100);
   }
 
-  // Open the watch page with an in-app navigation (no page reload), starting where
-  // the preview currently is. Falls back to a normal page load.
+  // Open the watch page with an in-app navigation (no page reload). No start time:
+  // the preview is only a "trailer" from somewhere in the middle, so a new video
+  // starts at 0:00, and one you've partly watched resumes where *you* stopped
+  // (YouTube's watch page does that by itself; previews never count as progress).
+  // Falls back to a normal page load.
   function open(cmd) {
     const p = player && player.isConnected ? player : null;
-    let t = 0;
-    if (p && !cmd.live && p.getVideoData?.()?.video_id === cmd.id) {
-      const now = p.getCurrentTime?.() || 0;
-      if (now > 1) t = Math.floor(now);
-    }
     recordCpn(p);
     try { p?.pauseVideo(); } catch {}
     want = null;
     stopPoll();
     stageOn = false; // from here on the real watch page logs to history as normal
 
-    const url = `/watch?v=${encodeURIComponent(cmd.id)}${t ? `&t=${t}s` : ''}`;
+    const url = `/watch?v=${encodeURIComponent(cmd.id)}`;
     const endpoint = {
       commandMetadata: { webCommandMetadata: { url, webPageType: 'WEB_PAGE_TYPE_WATCH', rootVe: 3832 } },
-      watchEndpoint: { videoId: cmd.id, ...(t ? { startTimeSeconds: t } : {}) },
+      watchEndpoint: { videoId: cmd.id },
     };
     try {
       document.querySelector('ytd-app')?.dispatchEvent(
